@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import { Smooch_Sans } from "next/font/google"
+
+const smoochSans = Smooch_Sans({
+  subsets: ["latin"],
+  weight: "700",
+})
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",

@@ -1,101 +1,159 @@
-import Image from "next/image";
+"use client"
 
-export default function Home() {
+import { useState } from "react"
+import Image from "next/image"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { User, Lock, Mail, ArrowLeft } from "lucide-react"
+import { Smooch_Sans } from "next/font/google"
+import { cn } from "@/lib/utils"
+
+const smoochSans = Smooch_Sans({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+})
+
+export default function LoginPage() {
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  })
+
+  const [recoveryData, setRecoveryData] = useState({
+    email: "",
+    username: "",
+  })
+
+  const [isRecoveryMode, setIsRecoveryMode] = useState(false)
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    // Handle login logic here
+  }
+
+  const handleRecovery = (e: React.FormEvent) => {
+    e.preventDefault()
+    // Handle password recovery logic here
+  }
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center p-4">
+      <div className="w-full max-w-[1200px] bg-white rounded-[32px] shadow-lg flex flex-col lg:flex-row p-8 gap-8">
+        {/* Left side - Forms */}
+        <div className="flex-1 flex flex-col justify-center">
+          <div className="max-w-md">
+            <div
+              className={cn(
+                "transition-all duration-300 transform",
+                isRecoveryMode ? "translate-x-[-100%] absolute opacity-0" : "translate-x-0 relative opacity-100",
+              )}
+            >
+              <h1 className={`text-[#000044] text-8xl mb-2 ${smoochSans.className} font-bold`}>Bem Vindo</h1>
+              <p className='text-[#000044] mb-8 font-bold'>Realize seu login e veja suas operações</p>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
+                  <Input
+                    type="email"
+                    placeholder="Email"
+                    className="bg-[#f5f5f5] border-0 h-12 pl-10 text-black"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  />
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
+                  <Input
+                    type="password"
+                    placeholder="Senha"
+                    className="bg-[#f5f5f5] border-0 h-12 pl-10 text-black"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  className="w-full h-12 bg-[#FFA500] hover:bg-[#FF8C00] text-white rounded-md font-bold border-2 border black"
+                >
+                  Entrar
+                </Button>
+                <div className="mt-4 text-center">
+                  <button
+                    type="button"
+                    onClick={() => setIsRecoveryMode(true)}
+                    className={`${smoochSans.className} font-bold text-xl   text-[#000080] hover:underline`}
+                  >
+                    Esqueci a senha
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Recovery Form */}
+            <div
+              className={cn(
+                "transition-all duration-300 transform",
+                isRecoveryMode ? "translate-x-0 relative opacity-100" : "translate-x-[100%] absolute opacity-0",
+              )}
+            >
+              <div className="flex items-center mb-4">
+                <button
+                  onClick={() => setIsRecoveryMode(false)}
+                  className="text-[#000080] hover:text-[#000080]/80 mr-4"
+                >
+                  <ArrowLeft className="h-6 w-6" />
+                </button>
+                <h1 className={`text-[#000044] text-5xl ${smoochSans.className} font-bold`}>Recuperar Senha</h1>
+              </div>
+              <p className={`text-[#000044] mb-4 font-semibold justify-center align-itens  ${smoochSans.className} text-xl `}>
+                Digite seu email e usuário para recuperar sua senha
+              </p>
+
+              <form onSubmit={handleRecovery} className="space-y-4">
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
+                  <Input
+                    type="email"
+                    placeholder="Email"
+                    className="bg-[#f5f5f5] border-0 h-12 pl-10 text-black"
+                    value={recoveryData.email}
+                    onChange={(e) => setRecoveryData({ ...recoveryData, email: e.target.value })}
+                  />
+                </div>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
+                  <Input
+                    type="text"
+                    placeholder="Usuário"
+                    className="bg-[#f5f5f5] border-0 h-12 pl-10 text-black"
+                    value={recoveryData.username}
+                    onChange={(e) => setRecoveryData({ ...recoveryData, username: e.target.value })}
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  className="w-full h-12 bg-[#FFA500] hover:bg-[#FF8C00] text-white font-bold rounded-md"
+                >
+                  Recuperar Senha
+                </Button>
+              </form>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+
+        {/* Right side - Logo */}
+        <div className="flex-1 flex items-center justify-center">
           <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+            src="/img/giro_logo.png"
+            alt="Giro Capital Logo"
+            width={500}
+            height={150}
+            className="max-w-full h-auto"
+            priority
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        </div>
+      </div>
     </div>
-  );
+  )
 }
