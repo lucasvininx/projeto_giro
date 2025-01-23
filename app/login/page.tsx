@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { User, Lock, Mail, ArrowLeft } from "lucide-react"
@@ -14,6 +15,7 @@ const smoochSans = Smooch_Sans({
 })
 
 export default function LoginPage() {
+  const router = useRouter()
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -25,15 +27,33 @@ export default function LoginPage() {
   })
 
   const [isRecoveryMode, setIsRecoveryMode] = useState(false)
+  const [error, setError] = useState("")
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle login logic here
+    setError("")
+
+    // This is a mock authentication
+    // In a real app, you would validate against your backend
+    if (formData.email && formData.password) {
+      // Simulate API call delay
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      // Navigate to dashboard after successful login
+      router.push("/dashboard")
+    } else {
+      setError("Por favor, preencha todos os campos")
+    }
   }
 
-  const handleRecovery = (e: React.FormEvent) => {
+  const handleRecovery = async (e: React.FormEvent) => {
     e.preventDefault()
     // Handle password recovery logic here
+    if (recoveryData.email && recoveryData.username) {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      setIsRecoveryMode(false)
+    }
   }
 
   return (
@@ -48,8 +68,8 @@ export default function LoginPage() {
                 isRecoveryMode ? "translate-x-[-100%] absolute opacity-0" : "translate-x-0 relative opacity-100",
               )}
             >
-              <h1 className={`text-[#000044] text-8xl mb-2 ${smoochSans.className} font-bold`}>Bem Vindo</h1>
-              <p className='text-[#000044] mb-8 font-bold'>Realize seu login e veja suas operações</p>
+              <h1 className={`text-[#000044] text-8xl mb-2 ${smoochSans.className} font-bold`}>Bem-Vindo!</h1>
+              <p className="text-[#000044] mb-8 font-bold">Realize seu login e veja suas operações</p>
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="relative">
@@ -72,9 +92,10 @@ export default function LoginPage() {
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   />
                 </div>
+                {error && <p className="text-red-500 text-sm">{error}</p>}
                 <Button
                   type="submit"
-                  className="w-full h-12 bg-[#FFA500] hover:bg-[#FF8C00] text-white rounded-md font-bold border-2 border black"
+                  className="w-full h-12 bg-[#FFA500] hover:bg-[#FF8C00] text-white rounded-md font-bold"
                 >
                   Entrar
                 </Button>
@@ -82,7 +103,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setIsRecoveryMode(true)}
-                    className={`${smoochSans.className} font-bold text-xl   text-[#000080] hover:underline`}
+                    className={`${smoochSans.className} font-semibold text-xl text-[#000080] hover:underline`}
                   >
                     Esqueci a senha
                   </button>
@@ -97,16 +118,16 @@ export default function LoginPage() {
                 isRecoveryMode ? "translate-x-0 relative opacity-100" : "translate-x-[100%] absolute opacity-0",
               )}
             >
-              <div className="flex items-center mb-4">
+              <div className="flex items-center mb-6">
                 <button
                   onClick={() => setIsRecoveryMode(false)}
                   className="text-[#000080] hover:text-[#000080]/80 mr-4"
                 >
                   <ArrowLeft className="h-6 w-6" />
                 </button>
-                <h1 className={`text-[#000044] text-5xl ${smoochSans.className} font-bold`}>Recuperar Senha</h1>
+                <h1 className={`text-[#000080] text-5xl ${smoochSans.className} font-bold`}>Recuperar Senha</h1>
               </div>
-              <p className={`text-[#000044] mb-4 font-semibold justify-center align-itens  ${smoochSans.className} text-xl `}>
+              <p className={`text-[#000000] mb-4 font-bold ${smoochSans.className} text-sm`}>
                 Digite seu email e usuário para recuperar sua senha
               </p>
 
@@ -157,3 +178,4 @@ export default function LoginPage() {
     </div>
   )
 }
+
