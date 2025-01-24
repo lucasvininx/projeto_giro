@@ -8,17 +8,14 @@ import {
   Inbox,
   BarChart3,
   Calendar,
-  Search,
   Sun,
   Moon,
   LogOut,
   User,
   Settings,
 } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,6 +27,8 @@ import {
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import { Progress } from "@/components/ui/progress";
+
+const notifications = []; // Nenhuma notificação no momento
 
 export default function DashboardPage() {
   const { theme, setTheme } = useTheme();
@@ -43,12 +42,18 @@ export default function DashboardPage() {
 
   const navItems = [
     { icon: Home, label: "Home", active: true },
-    { icon: Calendar, label: "Minhas Operações" },
+    { icon: Calendar, label: "Minhas Operações", href: "/minhas-operacoes" },
     { icon: BarChart3, label: "Desempenho" },
     { icon: Inbox, label: "Inbox" },
     { icon: Users, label: "Parceiros" },
     { icon: BarChart3, label: "Metas" },
   ];
+
+  const handleNavigation = (href: string | undefined) => {
+    if (href) {
+      router.push(href); // Redireciona para a rota definida
+    }
+  };
 
   const handleLogout = () => {
     router.push("login");
@@ -64,8 +69,11 @@ export default function DashboardPage() {
           {navItems.map((item, index) => (
             <button
               key={index}
+              onClick={() => handleNavigation(item.href)} // Redireciona para o href
               className={`flex items-center space-x-3 w-full p-2 rounded-lg transition-colors ${
-                item.active ? "bg-primary text-primary-foreground" : "hover:bg-accent"
+                item.active
+                  ? "bg-primary text-primary-foreground"
+                  : "hover:bg-orange-500 hover:text-white"
               }`}
             >
               <item.icon size={20} />
@@ -74,6 +82,8 @@ export default function DashboardPage() {
           ))}
         </div>
       </div>
+      
+
 
       {/* Main Content */}
       <div className="ml-64 p-6">
@@ -81,32 +91,39 @@ export default function DashboardPage() {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">Olá, Tiago Cazarotto</h1>
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
-              {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            >
+              {theme === "dark" ? (
+                <Sun className="h-5 w-5" />
+              ) : (
+                <Moon className="h-5 w-5" />
+              )}
             </Button>
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Bell />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="center">
-                <DropdownMenuLabel>Notificações</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <User className="mr-2 h-4 w-4" />
-                  <span>Editar Perfil</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Configurações</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleLogout}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Sair</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+  <DropdownMenuTrigger asChild>
+    <Button variant="ghost" size="icon">
+      <Bell />
+    </Button>
+  </DropdownMenuTrigger>
+  <DropdownMenuContent align="center">
+    <DropdownMenuLabel>Notificações</DropdownMenuLabel>
+    <DropdownMenuSeparator />
+    {notifications.length > 0 ? (
+      notifications.map((notification, index) => (
+        <DropdownMenuItem key={index}>
+          <User className="mr-2 h-4 w-4" />
+          <span>{notification.message}</span>
+        </DropdownMenuItem>
+      ))
+    ) : (
+      <div className="p-4 text-sm text-muted-foreground">Não há novas atualizações</div>
+    )}
+  </DropdownMenuContent>
+</DropdownMenu>
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Avatar className="cursor-pointer">
@@ -137,7 +154,9 @@ export default function DashboardPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 gap-6 mb-8">
           <div className="bg-card p-6 rounded-xl">
-            <h2 className="text-xl font-semibold mb-2">Suas operações atuais são:</h2>
+            <h2 className="text-xl font-semibold mb-2">
+              Suas operações atuais são:
+            </h2>
             <p className="text-4xl font-bold text-primary">10</p>
           </div>
           <div className="bg-card p-6 rounded-xl">
@@ -149,11 +168,18 @@ export default function DashboardPage() {
         {/* Grid Layout */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {progressValues.map((progress, index) => (
-            <div key={index} className="p-6 rounded-xl border border-gray-300">
-              <h3 className="text-xl font-semibold mb-4">Operação {index + 1}</h3>
+            <div
+              key={index}
+              className="p-6 rounded-xl border border-gray-300"
+            >
+              <h3 className="text-xl font-semibold mb-4">
+                Operação {index + 1}
+              </h3>
               <div className="flex justify-between items-center">
                 <div className="space-y-2">
-                  <p className="text-muted-foreground"> {progress === 100 ? "Concluído" : "Em Progresso"}</p>
+                  <p className="text-muted-foreground">
+                    {progress === 100 ? "Concluído" : "Em Progresso"}
+                  </p>
                   <Progress value={progress} />
                 </div>
                 <div className="text-right">
