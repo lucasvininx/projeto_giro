@@ -5,7 +5,7 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { User, Lock, Mail, ArrowLeft } from "lucide-react"
+import { User, Lock, Mail, ArrowLeft, Loader2 } from "lucide-react"
 import { Smooch_Sans } from "next/font/google"
 import { cn } from "@/lib/utils"
 
@@ -28,31 +28,48 @@ export default function LoginPage() {
 
   const [isRecoveryMode, setIsRecoveryMode] = useState(false)
   const [error, setError] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
+    setIsLoading(true)
 
-    // This is a mock authentication
-    // In a real app, you would validate against your backend
     if (formData.email && formData.password) {
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      try {
+        // Simulate API call delay
+        await new Promise((resolve) => setTimeout(resolve, 2000))
 
-      // Navigate to dashboard after successful login
-      router.push("/dashboard")
+        // Navigate to dashboard after successful login
+        router.push("/dashboard")
+      } catch (error) {
+        setError("Erro ao fazer login. Tente novamente.")
+      } finally {
+        setIsLoading(false)
+      }
     } else {
       setError("Por favor, preencha todos os campos")
+      setIsLoading(false)
     }
   }
 
   const handleRecovery = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsLoading(true)
     // Handle password recovery logic here
     if (recoveryData.email && recoveryData.username) {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      setIsRecoveryMode(false)
+      try {
+        // Simulate API call
+        await new Promise((resolve) => setTimeout(resolve, 2000))
+        setIsRecoveryMode(false)
+      } catch (error) {
+        setError("Erro ao recuperar senha. Tente novamente.")
+      } finally {
+        setIsLoading(false)
+      }
+    } else {
+      setError("Por favor, preencha todos os campos")
+      setIsLoading(false)
     }
   }
 
@@ -96,8 +113,16 @@ export default function LoginPage() {
                 <Button
                   type="submit"
                   className="w-full h-12 bg-[#FFA500] hover:bg-[#FF8C00] text-white rounded-md font-bold"
+                  disabled={isLoading}
                 >
-                  Entrar
+                  {isLoading ? (
+                    <div className="flex items-center justify-center">
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Carregando...
+                    </div>
+                  ) : (
+                    "Entrar"
+                  )}
                 </Button>
                 <div className="mt-4 text-center">
                   <button
@@ -152,11 +177,20 @@ export default function LoginPage() {
                     onChange={(e) => setRecoveryData({ ...recoveryData, username: e.target.value })}
                   />
                 </div>
+                {error && <p className="text-red-500 text-sm">{error}</p>}
                 <Button
                   type="submit"
                   className="w-full h-12 bg-[#FFA500] hover:bg-[#FF8C00] text-white font-bold rounded-md"
+                  disabled={isLoading}
                 >
-                  Recuperar Senha
+                  {isLoading ? (
+                    <div className="flex items-center justify-center">
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Carregando...
+                    </div>
+                  ) : (
+                    "Recuperar Senha"
+                  )}
                 </Button>
               </form>
             </div>
@@ -175,6 +209,16 @@ export default function LoginPage() {
           />
         </div>
       </div>
+
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-5 rounded-lg flex flex-col items-center">
+            <Loader2 className="h-12 w-12 text-[#FFA500] animate-spin mb-3" />
+            <p className="text-[#000044] font-bold">Carregando...</p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
