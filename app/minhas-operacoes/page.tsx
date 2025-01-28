@@ -28,8 +28,6 @@ import { Textarea } from "@/components/ui/textarea"
 import Link from "next/link"
 import { Switch } from "@/components/ui/switch"
 
-
-
 // Mock data for operations with all required fields
 const operations = [
   {
@@ -37,7 +35,7 @@ const operations = [
     number: "OP001",
     client: "Cliente A",
     value: 10000,
-    status: "Em andamento",
+    status: "Comitê",
     personType: "fisica",
     clientName: "João Silva",
     clientEmail: "joao@example.com",
@@ -60,7 +58,7 @@ const operations = [
     number: "OP002",
     client: "Cliente B",
     value: 15000,
-    status: "Concluída",
+    status: "Recusada",
     personType: "juridica",
     clientName: "Empresa XYZ Ltda",
     clientEmail: "contato@empresaxyz.com",
@@ -105,13 +103,21 @@ export default function MinhasOperacoesPage() {
     incomeProof: "",
     creditDefense: "",
     documents: null,
+    cpf: "",
+    rg: "",
+    maritalStatus: "",
+    spouseName: "",
+    spouseCPF: "",
+    spouseRG: "",
   })
+  const [isCurrentStepValid, setIsCurrentStepValid] = useState(false)
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | { target: { name: string; value: string } },
   ) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
+    setIsCurrentStepValid(isStepValid(currentStep))
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -121,18 +127,18 @@ export default function MinhasOperacoesPage() {
   }
 
   const handleNextStep = () => {
-    if (validateStep(currentStep)) {
+    if (isCurrentStepValid) {
       setCurrentStep((prev) => prev + 1)
-    } else {
-      alert("Por favor, preencha todos os campos obrigatórios antes de prosseguir.")
+      setIsCurrentStepValid(isStepValid(currentStep + 1))
     }
   }
 
   const handlePreviousStep = () => {
     setCurrentStep((prev) => prev - 1)
+    setIsCurrentStepValid(isStepValid(currentStep - 1))
   }
 
-  const validateStep = (step: number) => {
+  const isStepValid = (step: number) => {
     switch (step) {
       case 1:
         return (
@@ -141,7 +147,11 @@ export default function MinhasOperacoesPage() {
           formData.clientEmail &&
           formData.clientPhone &&
           formData.clientAddress &&
-          formData.clientDocument
+          formData.clientDocument &&
+          formData.cpf &&
+          formData.rg &&
+          formData.maritalStatus &&
+          (formData.maritalStatus !== "casado" || (formData.spouseName && formData.spouseCPF && formData.spouseRG))
         )
       case 2:
         return formData.clientSalary && formData.profession && formData.professionalActivity
@@ -156,13 +166,12 @@ export default function MinhasOperacoesPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (validateStep(4)) {
+    if (isCurrentStepValid) {
       console.log(formData)
       // Here you would typically send the data to your backend
       setIsDialogOpen(false)
       setCurrentStep(1)
-    } else {
-      alert("Por favor, preencha todos os campos obrigatórios antes de enviar.")
+      setIsCurrentStepValid(false)
     }
   }
 
@@ -199,6 +208,12 @@ export default function MinhasOperacoesPage() {
       number: "Número da Operação",
       status: "Status",
       value: "Valor da Operação",
+      cpf: "CPF",
+      rg: "RG",
+      maritalStatus: "Estado Civil",
+      spouseName: "Nome do Cônjuge",
+      spouseCPF: "CPF do Cônjuge",
+      spouseRG: "RG do Cônjuge",
     }
     return labels[key] || key.charAt(0).toUpperCase() + key.slice(1)
   }
@@ -224,7 +239,7 @@ export default function MinhasOperacoesPage() {
     switch (currentStep) {
       case 1:
         return (
-          <div className="space-y-2">
+          <div className="space-y-4">
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
                 <Label htmlFor="personType" className="text-xs">
@@ -234,8 +249,9 @@ export default function MinhasOperacoesPage() {
                   name="personType"
                   onValueChange={(value) => setFormData((prev) => ({ ...prev, personType: value }))}
                   required
+                  className="rounded-md"
                 >
-                  <SelectTrigger className="h-8">
+                  <SelectTrigger className="h-8 rounded-md">
                     <SelectValue placeholder="Selecione" />
                   </SelectTrigger>
                   <SelectContent>
@@ -254,7 +270,7 @@ export default function MinhasOperacoesPage() {
                   value={formData.clientName}
                   onChange={handleInputChange}
                   required
-                  className="h-8"
+                  className="h-8 rounded-md"
                 />
               </div>
             </div>
@@ -268,9 +284,97 @@ export default function MinhasOperacoesPage() {
                 value={formData.clientDocument}
                 onChange={handleInputChange}
                 required
-                className="h-8"
+                className="h-8 rounded-md"
               />
             </div>
+            <div className="space-y-1">
+              <Label htmlFor="cpf" className="text-xs">
+                CPF*
+              </Label>
+              <Input
+                id="cpf"
+                name="cpf"
+                value={formData.cpf}
+                onChange={handleInputChange}
+                required
+                className="h-8 rounded-md"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="rg" className="text-xs">
+                RG*
+              </Label>
+              <Input
+                id="rg"
+                name="rg"
+                value={formData.rg}
+                onChange={handleInputChange}
+                required
+                className="h-8 rounded-md"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="maritalStatus" className="text-xs">
+                Estado Civil*
+              </Label>
+              <Select
+                name="maritalStatus"
+                onValueChange={(value) => setFormData((prev) => ({ ...prev, maritalStatus: value }))}
+                required
+                className="rounded-md"
+              >
+                <SelectTrigger className="h-8 rounded-md">
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="solteiro">Solteiro</SelectItem>
+                  <SelectItem value="casado">Casado</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {formData.maritalStatus === "casado" && (
+              <>
+                <div className="space-y-1">
+                  <Label htmlFor="spouseName" className="text-xs">
+                    Nome do Cônjuge*
+                  </Label>
+                  <Input
+                    id="spouseName"
+                    name="spouseName"
+                    value={formData.spouseName}
+                    onChange={handleInputChange}
+                    required
+                    className="h-8 rounded-md"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="spouseCPF" className="text-xs">
+                    CPF do Cônjuge*
+                  </Label>
+                  <Input
+                    id="spouseCPF"
+                    name="spouseCPF"
+                    value={formData.spouseCPF}
+                    onChange={handleInputChange}
+                    required
+                    className="h-8 rounded-md"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="spouseRG" className="text-xs">
+                    RG do Cônjuge*
+                  </Label>
+                  <Input
+                    id="spouseRG"
+                    name="spouseRG"
+                    value={formData.spouseRG}
+                    onChange={handleInputChange}
+                    required
+                    className="h-8 rounded-md"
+                  />
+                </div>
+              </>
+            )}
             <div className="space-y-1">
               <Label htmlFor="clientEmail" className="text-xs">
                 {formData.personType === "fisica" ? "Email do Cliente*" : "Email da Empresa*"}
@@ -282,7 +386,7 @@ export default function MinhasOperacoesPage() {
                 value={formData.clientEmail}
                 onChange={handleInputChange}
                 required
-                className="h-8"
+                className="h-8 rounded-md"
               />
             </div>
             <div className="space-y-1">
@@ -295,7 +399,7 @@ export default function MinhasOperacoesPage() {
                 value={formData.clientPhone}
                 onChange={handleInputChange}
                 required
-                className="h-8"
+                className="h-8 rounded-md"
               />
             </div>
             <div className="space-y-1">
@@ -308,14 +412,14 @@ export default function MinhasOperacoesPage() {
                 value={formData.clientAddress}
                 onChange={handleInputChange}
                 required
-                className="h-20 resize-none"
+                className="h-20 resize-none rounded-md"
               />
             </div>
           </div>
         )
       case 2:
         return (
-          <div className="space-y-2">
+          <div className="space-y-4">
             <div className="space-y-1">
               <Label htmlFor="clientSalary" className="text-xs">
                 Renda do Cliente*
@@ -327,7 +431,7 @@ export default function MinhasOperacoesPage() {
                 value={formData.clientSalary}
                 onChange={handleInputChange}
                 required
-                className="h-8"
+                className="h-8 rounded-md"
               />
             </div>
             <div className="space-y-1">
@@ -340,12 +444,12 @@ export default function MinhasOperacoesPage() {
                 value={formData.profession}
                 onChange={handleInputChange}
                 required
-                className="h-8"
+                className="h-8 rounded-md"
               />
             </div>
             <div className="space-y-1">
               <Label htmlFor="professionalActivity" className="text-xs">
-                Atividade Profissional*
+                Como exerce a função*
               </Label>
               <Textarea
                 id="professionalActivity"
@@ -353,14 +457,15 @@ export default function MinhasOperacoesPage() {
                 value={formData.professionalActivity}
                 onChange={handleInputChange}
                 required
-                className="h-20 resize-none"
+                className="h-20 resize-none rounded-md"
+                placeholder="Descreva detalhadamente como exerce sua função profissional"
               />
             </div>
           </div>
         )
       case 3:
         return (
-          <div className="space-y-2">
+          <div className="space-y-4">
             <div className="space-y-1">
               <Label htmlFor="propertyType" className="text-xs">
                 Tipo de Imóvel*
@@ -371,7 +476,7 @@ export default function MinhasOperacoesPage() {
                 value={formData.propertyType}
                 onChange={handleInputChange}
                 required
-                className="h-8"
+                className="h-8 rounded-md"
               />
             </div>
             <div className="space-y-1">
@@ -385,7 +490,7 @@ export default function MinhasOperacoesPage() {
                 value={formData.propertyValue}
                 onChange={handleInputChange}
                 required
-                className="h-8"
+                className="h-8 rounded-md"
               />
             </div>
             <div className="space-y-1">
@@ -398,7 +503,7 @@ export default function MinhasOperacoesPage() {
                 value={formData.propertyLocation}
                 onChange={handleInputChange}
                 required
-                className="h-8"
+                className="h-8 rounded-md"
               />
             </div>
             <div className="space-y-1">
@@ -412,14 +517,14 @@ export default function MinhasOperacoesPage() {
                 value={formData.desiredValue}
                 onChange={handleInputChange}
                 required
-                className="h-8"
+                className="h-8 rounded-md"
               />
             </div>
           </div>
         )
       case 4:
         return (
-          <div className="space-y-2">
+          <div className="space-y-4">
             <div className="space-y-1">
               <Label htmlFor="incomeProof" className="text-xs">
                 Comprovação de Renda*
@@ -430,7 +535,7 @@ export default function MinhasOperacoesPage() {
                 value={formData.incomeProof}
                 onChange={handleInputChange}
                 required
-                className="h-20 resize-none"
+                className="h-20 resize-none rounded-md"
               />
             </div>
             <div className="space-y-1">
@@ -443,7 +548,8 @@ export default function MinhasOperacoesPage() {
                 value={formData.creditDefense}
                 onChange={handleInputChange}
                 required
-                className="h-20 resize-none"
+                className="h-20 resize-none rounded-md"
+                placeholder="Explique detalhadamente a atividade profissional e o motivo da utilização do recurso"
               />
             </div>
             <div className="space-y-1">
@@ -458,7 +564,7 @@ export default function MinhasOperacoesPage() {
                 multiple
                 onChange={handleFileChange}
                 required
-                className="h-8"
+                className="h-8 rounded-md"
               />
             </div>
           </div>
@@ -512,62 +618,77 @@ export default function MinhasOperacoesPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Buscar operações"
-                className="pl-10"
+                className="pl-10 rounded-md"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-48">
+            <Select value={statusFilter} onValueChange={setStatusFilter} className="rounded-md">
+              <SelectTrigger className="w-48 rounded-md">
                 <SelectValue placeholder="Filtrar por status" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos os status</SelectItem>
-                <SelectItem value="Em andamento">Em andamento</SelectItem>
-                <SelectItem value="Concluída">Concluída</SelectItem>
-                <SelectItem value="Em análise">Em análise</SelectItem>
-                <SelectItem value="Declinada">Declinada</SelectItem>
+                <SelectItem value="Pré-Análise">Pré-Análise</SelectItem>
+                <SelectItem value="Análise">Análise</SelectItem>
+                <SelectItem value="Análise de Crédito">Análise de Crédito</SelectItem>
+                <SelectItem value="Análise Jurídica e Laudo de Engenharia">
+                  Análise Jurídica e Laudo de Engenharia
+                </SelectItem>
+                <SelectItem value="Comitê">Comitê</SelectItem>
+                <SelectItem value="Crédito Aprovado">Crédito Aprovado</SelectItem>
+                <SelectItem value="Contrato Assinado">Contrato Assinado</SelectItem>
+                <SelectItem value="Contrato Registrado">Contrato Registrado</SelectItem>
+                <SelectItem value="Recusada">Recusada</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+              <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md">
                 <PlusCircle className="mr-2 h-4 w-4" /> Nova Operação
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[400px]">
+            <DialogContent className="sm:max-w-[500px] max-h-[80vh] rounded-lg flex flex-col">
               <DialogHeader className="space-y-1 pb-2">
                 <DialogTitle className="text-lg">Nova Operação - Passo {currentStep}/4</DialogTitle>
                 <DialogDescription className="text-sm">
                   Preencha os detalhes abaixo. Campos com * são obrigatórios.
                 </DialogDescription>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-2">
-                {renderFormStep()}
-                <div className="flex justify-between pt-2">
-                  {currentStep > 1 && (
-                    <Button type="button" onClick={handlePreviousStep} size="sm">
-                      Voltar
-                    </Button>
-                  )}
-                  {currentStep < 4 ? (
-                    <Button type="button" onClick={handleNextStep} className="ml-auto" size="sm">
-                      Próximo
-                    </Button>
-                  ) : (
-                    <Button type="submit" className="ml-auto" size="sm">
-                      Cadastrar
-                    </Button>
-                  )}
-                </div>
-              </form>
+              <div className="flex-grow overflow-y-auto pr-4">
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  {renderFormStep()}
+                </form>
+              </div>
+              <div className="flex justify-between pt-4 mt-4 border-t">
+                {currentStep > 1 && (
+                  <Button type="button" onClick={handlePreviousStep} size="sm" className="rounded-md">
+                    Voltar
+                  </Button>
+                )}
+                {currentStep < 4 ? (
+                  <Button
+                    type="button"
+                    onClick={handleNextStep}
+                    className="ml-auto rounded-md"
+                    size="sm"
+                    disabled={!isStepValid(currentStep)}
+                  >
+                    Próximo
+                  </Button>
+                ) : (
+                  <Button type="submit" className="ml-auto rounded-md" size="sm" disabled={!isStepValid(currentStep)}>
+                    Cadastrar
+                  </Button>
+                )}
+              </div>
             </DialogContent>
           </Dialog>
         </div>
 
         {/* Operations Table */}
-        <Table>
+        <Table className="rounded-lg overflow-hidden">
           <TableHeader>
             <TableRow>
               <TableHead>Número da Operação</TableHead>
@@ -586,20 +707,24 @@ export default function MinhasOperacoesPage() {
                 <TableCell>
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      op.status === "Em andamento"
-                        ? "bg-yellow-200 text-yellow-800"
-                        : op.status === "Concluída"
-                          ? "bg-green-200 text-green-800"
-                          : "bg-blue-200 text-blue-800"
-                       
-    
+                      op.status === "Pré-Análise" || op.status === "Análise" || op.status === "Análise de Crédito"
+                        ? "bg-blue-200 text-blue-800"
+                        : op.status === "Análise Jurídica e Laudo de Engenharia" || op.status === "Comitê"
+                          ? "bg-yellow-200 text-yellow-800"
+                          : op.status === "Crédito Aprovado" ||
+                              op.status === "Contrato Assinado" ||
+                              op.status === "Contrato Registrado"
+                            ? "bg-green-200 text-green-800"
+                            : op.status === "Recusada"
+                              ? "bg-red-200 text-red-800"
+                              : "bg-gray-200 text-gray-800"
                     }`}
                   >
                     {op.status}
                   </span>
                 </TableCell>
                 <TableCell>
-                  <Button variant="ghost" size="sm" onClick={() => handleViewDetails(op)}>
+                  <Button variant="ghost" size="sm" className="rounded-md" onClick={() => handleViewDetails(op)}>
                     Ver detalhes
                   </Button>
                 </TableCell>
@@ -610,7 +735,7 @@ export default function MinhasOperacoesPage() {
 
         {/* Details Dialog */}
         <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
-          <DialogContent className="sm:max-w-[450px] max-h-[80vh] overflow-y-auto">
+          <DialogContent className="sm:max-w-[450px] max-h-[80vh] overflow-y-auto rounded-lg">
             <DialogHeader>
               <DialogTitle>Detalhes da Operação {selectedOperation?.number}</DialogTitle>
               <DialogDescription>Informações detalhadas sobre a operação selecionada.</DialogDescription>
