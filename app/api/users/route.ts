@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
+import bcrypt from "bcrypt";
 import dbConnect from "@/lib/mongodb";
-import { User } from "@/models/User"; // Importação correta do modelo
+import { User } from "@/models/User";
 
 export async function POST(req: Request) {
   try {
-    await dbConnect(); // Conecta ao banco
+    await dbConnect();
 
     const body = await req.json();
     const { name, email, password } = body;
@@ -13,7 +13,10 @@ export async function POST(req: Request) {
     // Verificar se o usuário já existe
     const userExists = await User.findOne({ email }); // Função do modelo User
     if (userExists) {
-      return NextResponse.json({ error: "Email já cadastrado" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Email já cadastrado" },
+        { status: 400 }
+      );
     }
 
     // Criptografar a senha
@@ -34,9 +37,15 @@ export async function POST(req: Request) {
       createdAt: user.createdAt,
     };
 
-    return NextResponse.json({ message: "Usuário criado com sucesso", user: userWithoutPassword }, { status: 201 });
+    return NextResponse.json(
+      { message: "Usuário criado com sucesso", user: userWithoutPassword },
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Erro ao criar usuário:", error);
-    return NextResponse.json({ error: "Erro ao criar usuário" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Erro ao criar usuário" },
+      { status: 500 }
+    );
   }
 }
