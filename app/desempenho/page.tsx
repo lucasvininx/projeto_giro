@@ -3,20 +3,7 @@
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import {
-  Bell,
-  Home,
-  Users,
-  Inbox,
-  BarChart3,
-  Calendar,
-  Sun,
-  Moon,
-  LogOut,
-  User,
-  Settings,
-  PlusCircle,
-} from "lucide-react"
+import { Bell, Sun, Moon, LogOut, User, Settings, PlusCircle, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -68,7 +55,7 @@ const notifications = [] // Placeholder for notifications
 const employeePerformanceData: Employee[] = [
   {
     name: "Você (Tiago Cazarotto)",
-    image: "/img/tiago.cazarotto.jpg",
+    image: "/img/tiago.cazarotto.png",
     operacoes: 20,
     receita: 400000,
     parceiros: 60,
@@ -91,8 +78,8 @@ const employeePerformanceData: Employee[] = [
     ],
   },
   {
-    name: "Júlio",
-    image: "/avatars/julio.png",
+    name: "Felipe",
+    image: "/avatars/felipe.png",
     operacoes: 12,
     receita: 250000,
     parceiros: 40,
@@ -103,8 +90,8 @@ const employeePerformanceData: Employee[] = [
     ],
   },
   {
-    name: "Felipe",
-    image: "/avatars/felipe.png",
+    name: "Júlio",
+    image: "/avatars/julio.png",
     operacoes: 10,
     receita: 200000,
     parceiros: 30,
@@ -154,7 +141,7 @@ const allOperations: Operation[] = [
     date: "2025-02-16",
     status: "completed",
     clientEmail: "pedro.oliveira@email.com",
-    employeeName: "Júlio",
+    employeeName: "Felipe",
   },
   {
     id: "4",
@@ -163,7 +150,7 @@ const allOperations: Operation[] = [
     date: "2025-02-15",
     status: "pending",
     clientEmail: "ana.costa@email.com",
-    employeeName: "Larissa",
+    employeeName: "Júlio",
   },
   {
     id: "5",
@@ -172,7 +159,7 @@ const allOperations: Operation[] = [
     date: "2025-02-14",
     status: "completed",
     clientEmail: "carlos.ferreira@email.com",
-    employeeName: "Felipe",
+    employeeName: "Larissa",
   },
 ]
 
@@ -249,20 +236,6 @@ export default function DesempenhoPage() {
     }
   }, [selectedEmployee])
 
-  const navItems = [
-    { icon: Home, label: "Home", href: "/dashboard" },
-    { icon: Calendar, label: "Minhas Operações", href: "/minhas-operacoes" },
-    { icon: BarChart3, label: "Desempenho", href: "/desempenho", active: true },
-    { icon: Inbox, label: "Inbox" },
-    { icon: Users, label: "Parceiros" },
-  ]
-
-  const handleNavigation = (href: string | undefined) => {
-    if (href) {
-      router.push(href)
-    }
-  }
-
   const handleLogout = () => {
     router.push("/login")
   }
@@ -292,29 +265,16 @@ export default function DesempenhoPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Sidebar */}
-      <div className="fixed left-0 top-0 h-full w-64 bg-card p-4">
-        <div className="space-y-6">
-          {navItems.map((item, index) => (
-            <button
-              key={index}
-              onClick={() => handleNavigation(item.href)}
-              className={`flex items-center space-x-3 w-full p-2 rounded-lg transition-colors ${
-                item.active ? "bg-primary text-primary-foreground" : "hover:bg-orange-500 hover:text-white"
-              }`}
-            >
-              <item.icon size={20} />
-              <span>{item.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* Main Content */}
-      <div className="ml-64 p-4 md:p-6">
+      <div className="p-4 md:p-6">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Desempenho</h1>
+          <div className="flex items-center space-x-4">
+            <Button variant="ghost" size="icon" onClick={() => router.push("/dashboard")}>
+              <ArrowLeft className="h-6 w-6" />
+            </Button>
+            <h1 className="text-3xl font-bold">Desempenho</h1>
+          </div>
           <div className="flex items-center space-x-4">
             <Button variant="ghost" size="icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
               {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
@@ -344,7 +304,7 @@ export default function DesempenhoPage() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Avatar className="cursor-pointer">
-                  <AvatarImage src={session?.user?.image || "/img/tiago.cazarotto.jpg"} />
+                  <AvatarImage src={session?.user?.image || "/img/default-avatar.png"} />
                   <AvatarFallback>{session?.user?.name ? session.user.name.charAt(0) : "U"}</AvatarFallback>
                 </Avatar>
               </DropdownMenuTrigger>
@@ -390,7 +350,7 @@ export default function DesempenhoPage() {
                       <AvatarImage src="/avatars/all.png" alt="Todos" />
                       <AvatarFallback>ALL</AvatarFallback>
                     </Avatar>
-                    <p className="font-medium text-sm text-center">Visão Geral</p>
+                    <p className="font-medium text-sm text-center">Todos</p>
                     <p className="text-xs text-muted-foreground">
                       {employeePerformanceData.reduce((sum, emp) => sum + emp.operacoes, 0)} op.
                     </p>
