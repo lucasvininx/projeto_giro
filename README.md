@@ -12,13 +12,14 @@ Sistema interno desenvolvido para otimizar e automatizar processos da Giro Capit
 ## 📷 Capturas de Tela
 
 ### 📌 Dashboard Principal
-![Dashboard](/img/dashboard.png)
+![Dashboard](./public/img/dashboard.png)
 
 ### 📌 Tela de Login
-![Login](/img/tela_login.png)
+![Login](./public/img/tela_login.png)
 
 ### 📌 Gestão de Usuários
-![Gestão de Usuários](/img/desempenho.png)
+![Gestão de Usuários](./public/img/desempenho.png)
+
 
 ## ⚙️ Funcionalidades
 
