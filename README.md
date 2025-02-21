@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚀 Sistema Giro Capital
 
-## Getting Started
+Sistema interno desenvolvido para otimizar e automatizar processos da Giro Capital de Crédito.
 
-First, run the development server:
+## 📌 Tecnologias Utilizadas
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Frontend:** React, Next.js, ShadCN/UI, TailwindCSS
+- **Backend:** Node.js, Express, TypeScript, JavaScript
+- **Banco de Dados:** MongoDB, Firebase
+- **Autenticação:** JWT, bcrypt
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 📷 Capturas de Tela
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 📌 Dashboard Principal
+![Dashboard](/img/dashboard.png)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 📌 Tela de Login
+![Login](/img/tela_login.png)
 
-## Learn More
+### 📌 Gestão de Usuários
+![Gestão de Usuários](/img/desempenho.png)
 
-To learn more about Next.js, take a look at the following resources:
+## ⚙️ Funcionalidades
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- 📊 **Painel Administrativo**: Visão geral dos indicadores da empresa.
+- 🔒 **Autenticação Segura**: Login com JWT e bcrypt.
+- 📂 **Gestão de Clientes**: Cadastro, edição e exclusão de clientes.
+- 🔄 **Integração com Planilhas**: Importação de dados automatizada.
+- 📑 **Relatórios Dinâmicos**: Geração de relatórios personalizados.
+- 🛠 **Automatização de Processos**: Redução de tarefas manuais.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+## 📜 Licença
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Este projeto é de uso interno da Giro Capital e não está disponível para distribuição pública.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
