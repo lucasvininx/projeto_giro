@@ -38,7 +38,7 @@ const notifications = [] // Nenhuma notificação no momento
 
 // Interface para as operações
 interface Operation {
-  id: number
+  _id: string
   name: string
   progress: number
   status: "completed" | "in_progress"
@@ -48,53 +48,40 @@ interface Operation {
   client: string
 }
 
-// Dados das operações
-const operations: Operation[] = [
-  {
-    id: 1,
-    name: "Casa em Alphaville",
-    progress: 60,
-    status: "in_progress",
-    value: 1500000,
-    image: "/img/casa_alphaville.jpg", // Substitua pelo caminho real da imagem
-    address: "Rua Alphaville, 123",
-    client: "João Silva",
-  },
-  {
-    id: 2,
-    name: "Apartamento Centro",
-    progress: 30,
-    status: "in_progress",
-    value: 800000,
-    image: "/img/apartamento_centro.jpg", // Substitua pelo caminho real da imagem
-    address: "Av. Central, 456",
-    client: "Maria Santos",
-  },
-  {
-    id: 3,
-    name: "Casa de Praia",
-    progress: 100,
-    status: "completed",
-    value: 2000000,
-    image: "/img/casa_praia.jpg", // Substitua pelo caminho real da imagem
-    address: "Av. Beira Mar, 789",
-    client: "Pedro Oliveira",
-  },
-]
-
 export default function DashboardPage() {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   const router = useRouter()
   const [showEditProfile, setShowEditProfile] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
-  const [userData, setUserData] = useState({ name: "Tiago Cazarotto", image: "/img/tiago.cazarotto.jpg" })
+  const [userData, setUserData] = useState({ name: "", image: "" })
+  const [operations, setOperations] = useState<Operation[]>([])
+  const [totalValue, setTotalValue] = useState(0)
+  const [targetValue, setTargetValue] = useState(0)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [selectedOperation, setSelectedOperation] = useState<Operation | null>(null)
 
   useEffect(() => {
     setMounted(true)
+    fetchDashboardData()
   }, [])
+
+  const fetchDashboardData = async () => {
+    try {
+      const response = await fetch("/api/dashboard")
+      if (response.ok) {
+        const data = await response.json()
+        setUserData(data.user)
+        setOperations(data.operations)
+        setTotalValue(data.totalValue)
+        setTargetValue(data.targetValue)
+      } else {
+        console.error("Failed to fetch dashboard data")
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error)
+    }
+  }
 
   const navItems = [
     { icon: Home, label: "Home", active: true },
@@ -128,9 +115,6 @@ export default function DashboardPage() {
   const closeImage = () => {
     setSelectedImage(null)
   }
-
-  const totalValue = operations.reduce((sum, op) => sum + op.value, 0)
-  const targetValue = 5000000 // Meta de faturamento
 
   if (!mounted) return null
 
@@ -188,7 +172,7 @@ export default function DashboardPage() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Avatar className="cursor-pointer">
-                  <AvatarImage src={userData?.image || "/img/tiago.cazarotto.jpg"} />
+                  <AvatarImage src={userData?.image || "/placeholder.svg"} />
                   <AvatarFallback>{userData?.name ? userData.name.charAt(0) : "U"}</AvatarFallback>
                 </Avatar>
               </DropdownMenuTrigger>
@@ -231,7 +215,7 @@ export default function DashboardPage() {
         {/* Grid Layout */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {operations.map((operation) => (
-            <div key={operation.id} className="p-6 rounded-xl border border-gray-300">
+            <div key={operation._id} className="p-6 rounded-xl border border-gray-300">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xl font-semibold">{operation.name}</h3>
                 <Button
@@ -320,11 +304,11 @@ export default function DashboardPage() {
               <form className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Nome</Label>
-                  <Input id="name" defaultValue="Tiago Cazarotto" />
+                  <Input id="name" defaultValue={userData.name} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" defaultValue="tiago@example.com" />
+                  <Input id="email" type="email" defaultValue={userData.email} />
                 </div>
                 <Button type="submit">Salvar Alterações</Button>
               </form>
