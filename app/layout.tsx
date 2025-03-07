@@ -1,10 +1,13 @@
 "use client";
 
+import type React from "react";
+
 import localFont from "next/font/local";
 import "./globals.css";
 import { Smooch_Sans } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { SessionProvider } from "next-auth/react";
+import { Toaster } from "@/components/ui/toaster";
 
 const smoochSans = Smooch_Sans({
   subsets: ["latin"],
@@ -24,24 +27,28 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <SessionProvider>
-      <html lang="en" suppressHydrationWarning>
-        <body className={`${geistSans.variable} ${geistMono.variable} ${smoochSans.variable} font-sans antialiased`}>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+    <html lang="pt-BR" suppressHydrationWarning>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} ${smoochSans.variable} font-sans antialiased`}
+      >
+        <SessionProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
             {children}
+            <Toaster />
           </ThemeProvider>
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `
-                window.NEXTAUTH_SECRET = "${process.env.NEXTAUTH_SECRET}";
-                window.NEXTAUTH_URL = "${process.env.NEXTAUTH_URL}";
-              `,
-            }}
-          />
-        </body>
-      </html>
-    </SessionProvider>
+        </SessionProvider>
+      </body>
+    </html>
   );
 }

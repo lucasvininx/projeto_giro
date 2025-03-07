@@ -1,13 +1,23 @@
-import mongoose, { Schema, model, models } from "mongoose";
+import mongoose, { Schema, type Document } from "mongoose";
 
-// Definição do esquema do usuário
-const userSchema = new Schema({
+export interface IUser extends Document {
+  name: string;
+  email: string;
+  password: string;
+  image?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const UserSchema = new Schema<IUser>(
+  {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-  });
-  
-  // Evitar recriar o modelo em ambiente de desenvolvimento
-  const User = models.User || model("User", userSchema);
-  
-  export { User }; // Exporta o modelo User
+    image: { type: String },
+  },
+  { timestamps: true }
+);
+
+export default mongoose.models.User ||
+  mongoose.model<IUser>("User", UserSchema);
