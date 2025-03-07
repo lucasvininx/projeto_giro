@@ -10,10 +10,12 @@ import { User, Lock, Mail, ArrowLeft, Loader2 } from "lucide-react";
 import { Smooch_Sans } from "next/font/google";
 import { cn } from "@/lib/utils";
 
+
 const smoochSans = Smooch_Sans({
   subsets: ["latin"],
   weight: ["400", "700"],
 });
+
 
 export default function LoginPage() {
   const router = useRouter();
@@ -23,14 +25,17 @@ export default function LoginPage() {
     password: "",
   });
 
+
   const [recoveryData, setRecoveryData] = useState({
     email: "",
     username: "",
   });
 
+
   const [isRecoveryMode, setIsRecoveryMode] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
 
   useEffect(() => {
     const errorMessage = searchParams.get("error");
@@ -43,10 +48,12 @@ export default function LoginPage() {
     }
   }, [searchParams]);
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
+
 
     if (formData.email && formData.password) {
       try {
@@ -56,6 +63,7 @@ export default function LoginPage() {
           redirect: false,
         });
 
+
         if (result?.error) {
           setError(
             result.error === "CredentialsSignin"
@@ -64,6 +72,7 @@ export default function LoginPage() {
           );
           return;
         }
+
 
         if (result?.ok) {
           router.push("/dashboard");
@@ -79,6 +88,7 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
+
 
   const handleRecovery = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,6 +108,7 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center p-4">
@@ -122,6 +133,7 @@ export default function LoginPage() {
               <p className="text-[#000044] mb-8 font-bold">
                 Realize seu login e veja suas operações
               </p>
+
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="relative">
@@ -175,6 +187,7 @@ export default function LoginPage() {
               </form>
             </div>
 
+
             {/* Recovery Form */}
             <div
               className={cn(
@@ -198,6 +211,7 @@ export default function LoginPage() {
               <p className="text-[#000044] mb-6">
                 Digite seu email e usuário para recuperar sua senha
               </p>
+
 
               <form onSubmit={handleRecovery} className="space-y-4">
                 <div className="relative">
@@ -250,6 +264,7 @@ export default function LoginPage() {
           </div>
         </div>
 
+
         {/* Right side - Logo */}
         <div className="flex-1 flex items-center justify-center">
           <Image
@@ -262,6 +277,7 @@ export default function LoginPage() {
           />
         </div>
       </div>
+
 
       {/* Loading Overlay */}
       {isLoading && (
