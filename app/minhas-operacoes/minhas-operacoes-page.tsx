@@ -1,23 +1,30 @@
-"use client"
+"use client";
 
-import { Textarea } from "@/components/ui/textarea"
-
-import { Checkbox } from "@/components/ui/checkbox"
-
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-
-import { Label } from "@/components/ui/label"
-
-import type React from "react"
-
-import { useToast } from "@/components/ui/use-toast"
-import { useState, useEffect, useCallback } from "react"
-import { PlusCircle, Loader2, Trash2 } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table"
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import type React from "react";
+import { useToast } from "@/components/ui/use-toast";
+import { useState, useEffect, useCallback } from "react";
+import { PlusCircle, Loader2, Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,63 +32,69 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { useRouter } from "next/navigation"
-import { useSession, signOut } from "next-auth/react"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useRouter } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
+import { cn } from "@/lib/utils";
 
-// Operation type definition
+// Definição dos tipos
 type Partner = {
-  name: string
-  cpf: string
-  cnpj: string
-  participation: string
-}
+  name: string;
+  cpf: string;
+  cnpj: string;
+  participation: string;
+};
 
 type Operation = {
-  _id: string
-  number: string
-  client: string
-  value: number
-  status: string
-  personType: "fisica" | "juridica"
-  clientName: string
-  clientEmail: string
-  clientPhone: string
-  clientAddress: string
-  clientDocument?: string
-  clientSalary: number
-  profession: string
-  professionalActivity: string
-  propertyType: string
-  propertyValue: number
-  propertyLocation: string
-  desiredValue: number
-  incomeProof: string
-  creditDefense: string
-  documents: string[]
-  cpf?: string
-  rg?: string
-  maritalStatus?: string
-  spouseName?: string
-  spouseCPF?: string
-  spouseRG?: string
-  cnpj?: string
-  partners?: Partner[]
-  companyRevenue?: number
-  employeesCount?: number
-  hasDebt?: boolean
-  debtValue?: number
-  debtInstitution?: string
-  personalDebts?: string
-  legalProcesses?: string
-  isRental?: boolean
-  rentalValue?: number
-  propertyImage?: string
-  createdAt: string
-  updatedAt: string
-}
+  _id: string;
+  number: string;
+  client: string;
+  value: number;
+  status: string;
+  personType: "fisica" | "juridica";
+  clientName: string;
+  clientEmail: string;
+  clientPhone: string;
+  clientAddress: string;
+  clientDocument?: string;
+  clientSalary: number;
+  profession: string;
+  professionalActivity: string;
+  propertyType: string;
+  propertyValue: number;
+  propertyLocation: string;
+  desiredValue: number;
+  incomeProof: string;
+  creditDefense: string;
+  documents: string[];
+  cpf?: string;
+  rg?: string;
+  maritalStatus?: string;
+  spouseName?: string;
+  spouseCPF?: string;
+  spouseRG?: string;
+  cnpj?: string;
+  partners?: Partner[];
+  companyRevenue?: number;
+  employeesCount?: number;
+  hasDebt?: boolean;
+  debtValue?: number;
+  debtInstitution?: string;
+  personalDebts?: string;
+  legalProcesses?: string;
+  isRental?: boolean;
+  rentalValue?: number;
+  propertyImage?: string;
+  createdAt: string;
+  updatedAt: string;
+};
 
 const statusColors: Record<string, string> = {
   "Pré-Análise": "bg-blue-100 text-blue-800",
@@ -95,20 +108,22 @@ const statusColors: Record<string, string> = {
   Recusada: "bg-red-100 text-red-800",
   "Em andamento": "bg-yellow-100 text-yellow-800",
   Concluída: "bg-green-100 text-green-800",
-}
+};
 
 export default function MinhasOperacoesPage() {
-  const router = useRouter()
-  const { data: session } = useSession()
-  const { toast } = useToast()
-  const [operations, setOperations] = useState<Operation[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false)
-  const [selectedOperation, setSelectedOperation] = useState<Operation | null>(null)
-  const [currentStep, setCurrentStep] = useState(1)
+  const router = useRouter();
+  const { data: session } = useSession();
+  const { toast } = useToast();
+  const [operations, setOperations] = useState<Operation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
+  const [selectedOperation, setSelectedOperation] = useState<Operation | null>(
+    null
+  );
+  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     personType: "fisica",
     clientName: "",
@@ -144,167 +159,179 @@ export default function MinhasOperacoesPage() {
     isRental: false,
     rentalValue: "",
     propertyImage: null as File | null,
-  })
-  const [isCurrentStepValid, setIsCurrentStepValid] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
-  const [deleting, setDeleting] = useState(false)
+  });
+  const [isCurrentStepValid, setIsCurrentStepValid] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
-  // Fetch operations from the API
+  // Função para buscar as operações
   const fetchOperations = useCallback(async () => {
     try {
-      setLoading(true)
-      const queryParams = new URLSearchParams()
+      setLoading(true);
+      const queryParams = new URLSearchParams();
 
       if (searchTerm) {
-        queryParams.append("search", searchTerm)
+        queryParams.append("search", searchTerm);
       }
 
       if (statusFilter !== "all") {
-        queryParams.append("status", statusFilter)
+        queryParams.append("status", statusFilter);
       }
 
-      console.log("Fetching operations with params:", queryParams.toString())
-      const response = await fetch(`/api/operations/index?${queryParams.toString()}`)
+      console.log("Fetching operations with params:", queryParams.toString());
+      const response = await fetch(
+        `/api/operations/index?${queryParams.toString()}`
+      );
 
       if (!response.ok) {
-        throw new Error("Falha ao buscar operações")
+        throw new Error("Falha ao buscar operações");
       }
 
-      const data = await response.json()
-      console.log("Fetched operations:", data)
-      setOperations(data)
+      const data = await response.json();
+      console.log("Fetched operations:", data);
+      setOperations(data);
     } catch (error) {
-      console.error("Error fetching operations:", error)
+      console.error("Error fetching operations:", error);
       toast({
         title: "Erro",
         description: "Não foi possível carregar as operações",
         variant: "destructive",
-      })
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [searchTerm, statusFilter, toast])
+  }, [searchTerm, statusFilter, toast]);
 
-  // Load operations on component mount and when filters change
   useEffect(() => {
     if (session) {
-      fetchOperations()
+      fetchOperations();
     }
-  }, [session, fetchOperations])
+  }, [session, fetchOperations]);
 
   useEffect(() => {
-    console.log("Current operations:", operations)
-  }, [operations])
+    console.log("Current operations:", operations);
+  }, [operations]);
 
   const handleInputChange = (
     e:
-      | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-      | { target: { name: string; value: string } },
+      | React.ChangeEvent<
+          HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+        >
+      | { target: { name: string; value: string } }
   ) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-    validateCurrentStep()
-  }
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    validateCurrentStep();
+  };
 
   const handleCheckboxChange = (name: string, checked: boolean) => {
-    setFormData((prev) => ({ ...prev, [name]: checked }))
-    validateCurrentStep()
-  }
+    setFormData((prev) => ({ ...prev, [name]: checked }));
+    validateCurrentStep();
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       if (e.target.name === "propertyImage") {
-        setFormData((prev) => ({ ...prev, propertyImage: e.target.files![0] }))
+        setFormData((prev) => ({ ...prev, propertyImage: e.target.files![0] }));
       } else if (e.target.name === "documents") {
-        setFormData((prev) => ({ ...prev, documents: e.target.files }))
+        setFormData((prev) => ({ ...prev, documents: e.target.files }));
       }
-      validateCurrentStep()
+      validateCurrentStep();
     }
-  }
+  };
 
   const validateCurrentStep = () => {
-    setIsCurrentStepValid(isStepValid(currentStep))
-  }
+    setIsCurrentStepValid(isStepValid(currentStep));
+  };
 
   const handleNextStep = () => {
     if (validateStep(currentStep)) {
-      setCurrentStep((prev) => Math.min(prev + 1, 4))
+      setCurrentStep((prev) => Math.min(prev + 1, 4));
     } else {
       toast({
         title: "Campos obrigatórios",
-        description: "Por favor, preencha todos os campos obrigatórios antes de continuar.",
+        description:
+          "Por favor, preencha todos os campos obrigatórios antes de continuar.",
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
 
   const handlePreviousStep = () => {
-    setCurrentStep((prev) => Math.max(prev - 1, 1))
-  }
+    setCurrentStep((prev) => Math.max(prev - 1, 1));
+  };
 
   const isStepValid = (step: number) => {
     switch (step) {
       case 1:
-        return !!formData.clientName && !!formData.clientEmail && !!formData.clientPhone
+        return (
+          !!formData.clientName &&
+          !!formData.clientEmail &&
+          !!formData.clientPhone
+        );
       case 2:
         if (formData.personType === "fisica") {
-          return !!formData.cpf && !!formData.profession
+          return !!formData.cpf && !!formData.profession;
         } else {
-          return !!formData.cnpj && formData.partners.every((p) => !!p.name && !!p.participation)
+          return (
+            !!formData.cnpj &&
+            formData.partners.every((p) => !!p.name && !!p.participation)
+          );
         }
       case 3:
-        return !!formData.propertyType && !!formData.propertyValue && !!formData.desiredValue
+        return (
+          !!formData.propertyType &&
+          !!formData.propertyValue &&
+          !!formData.desiredValue
+        );
       case 4:
-        return true
+        return true;
       default:
-        return false
+        return false;
     }
-  }
+  };
 
   const validateStep = (step: number) => {
-    return isStepValid(step)
-  }
+    return isStepValid(step);
+  };
 
   const uploadFile = async (file: File) => {
-    // Implementation of uploadFile function
-    const formData = new FormData()
-    formData.append("file", file)
+    const formDataUpload = new FormData();
+    formDataUpload.append("file", file);
     const response = await fetch("/api/upload", {
       method: "POST",
-      body: formData,
-    })
+      body: formDataUpload,
+    });
     if (!response.ok) {
-      throw new Error("Failed to upload file")
+      throw new Error("Failed to upload file");
     }
-    const data = await response.json()
-    return data.url
-  }
+    const data = await response.json();
+    return data.url;
+  };
 
   const uploadMultipleFiles = async (files: FileList) => {
-    // Implementation of uploadMultipleFiles function
-    const urls = []
+    const urls = [];
     for (let i = 0; i < files.length; i++) {
-      const url = await uploadFile(files[i])
-      urls.push(url)
+      const url = await uploadFile(files[i]);
+      urls.push(url);
     }
-    return urls
-  }
+    return urls;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!validateStep(currentStep)) {
-      return
+      return;
     }
 
     try {
-      setSubmitting(true)
+      setSubmitting(true);
 
-      // Prepare data for submission
       const operationData: any = {
         personType: formData.personType,
         clientName: formData.clientName,
-        client: formData.clientName, // For display in the table
+        client: formData.clientName,
         clientEmail: formData.clientEmail,
         clientPhone: formData.clientPhone,
         clientAddress: formData.clientAddress,
@@ -317,74 +344,68 @@ export default function MinhasOperacoesPage() {
         desiredValue: Number(formData.desiredValue),
         incomeProof: formData.incomeProof,
         creditDefense: formData.creditDefense,
-        value: Number(formData.desiredValue), // For display in the table
-      }
+        value: Number(formData.desiredValue),
+      };
 
-      // Add person-specific fields
       if (formData.personType === "fisica") {
-        operationData.cpf = formData.cpf
-        operationData.rg = formData.rg
-        operationData.maritalStatus = formData.maritalStatus
+        operationData.cpf = formData.cpf;
+        operationData.rg = formData.rg;
+        operationData.maritalStatus = formData.maritalStatus;
 
         if (formData.maritalStatus === "casado") {
-          operationData.spouseName = formData.spouseName
-          operationData.spouseCPF = formData.spouseCPF
-          operationData.spouseRG = formData.spouseRG
+          operationData.spouseName = formData.spouseName;
+          operationData.spouseCPF = formData.spouseCPF;
+          operationData.spouseRG = formData.spouseRG;
         }
       } else {
-        operationData.cnpj = formData.cnpj
-        operationData.partners = formData.partners
-        operationData.companyRevenue = Number(formData.companyRevenue)
-        operationData.employeesCount = Number(formData.employeesCount)
+        operationData.cnpj = formData.cnpj;
+        operationData.partners = formData.partners;
+        operationData.companyRevenue = Number(formData.companyRevenue);
+        operationData.employeesCount = Number(formData.employeesCount);
       }
 
-      // Add debt information
-      operationData.hasDebt = formData.hasDebt
+      operationData.hasDebt = formData.hasDebt;
       if (formData.hasDebt) {
-        operationData.debtValue = Number(formData.debtValue)
-        operationData.debtInstitution = formData.debtInstitution
+        operationData.debtValue = Number(formData.debtValue);
+        operationData.debtInstitution = formData.debtInstitution;
       }
 
-      operationData.personalDebts = formData.personalDebts
-      operationData.legalProcesses = formData.legalProcesses
+      operationData.personalDebts = formData.personalDebts;
+      operationData.legalProcesses = formData.legalProcesses;
 
-      // Add rental information
-      operationData.isRental = formData.isRental
+      operationData.isRental = formData.isRental;
       if (formData.isRental) {
-        operationData.rentalValue = Number(formData.rentalValue)
+        operationData.rentalValue = Number(formData.rentalValue);
       }
 
-      // Upload files if present
       if (formData.propertyImage) {
-        const imageUrl = await uploadFile(formData.propertyImage)
-        operationData.propertyImage = imageUrl
+        const imageUrl = await uploadFile(formData.propertyImage);
+        operationData.propertyImage = imageUrl;
       }
 
       if (formData.documents) {
-        const documentUrls = await uploadMultipleFiles(formData.documents)
-        operationData.documents = documentUrls
+        const documentUrls = await uploadMultipleFiles(formData.documents);
+        operationData.documents = documentUrls;
       } else {
-        operationData.documents = []
+        operationData.documents = [];
       }
 
-      // Submit to API
-      console.log("Submitting operation data:", operationData)
+      console.log("Submitting operation data:", operationData);
       const response = await fetch("/api/operations", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(operationData),
-      })
+      });
 
       if (!response.ok) {
-        throw new Error("Falha ao criar operação")
+        throw new Error("Falha ao criar operação");
       }
 
-      const createdOperation = await response.json()
-      console.log("Operation created successfully:", createdOperation)
+      const createdOperation = await response.json();
+      console.log("Operation created successfully:", createdOperation);
 
-      // Reset form and close dialog
       setFormData({
         personType: "fisica",
         clientName: "",
@@ -420,91 +441,92 @@ export default function MinhasOperacoesPage() {
         isRental: false,
         rentalValue: "",
         propertyImage: null,
-      })
+      });
 
-      // Close dialog first
-      setIsDialogOpen(false)
-      setCurrentStep(1)
-      setIsCurrentStepValid(false)
+      setIsDialogOpen(false);
+      setCurrentStep(1);
+      setIsCurrentStepValid(false);
 
-      // Wait a moment before refreshing operations to ensure the server has processed the new operation
       setTimeout(() => {
-        fetchOperations()
-      }, 500)
+        fetchOperations();
+      }, 500);
 
       toast({
         title: "Sucesso",
         description: "Operação criada com sucesso",
-      })
+      });
     } catch (error) {
-      console.error("Error submitting form:", error)
+      console.error("Error submitting form:", error);
       toast({
         title: "Erro",
         description: "Não foi possível criar a operação",
         variant: "destructive",
-      })
+      });
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
-  }
+  };
 
   const handleViewDetails = (operation: Operation) => {
-    setSelectedOperation(operation)
-    setIsDetailsDialogOpen(true)
-  }
+    setSelectedOperation(operation);
+    setIsDetailsDialogOpen(true);
+  };
 
   const handleDeleteOperation = async (id: string) => {
-    setDeleting(true)
+    setDeleting(true);
     try {
       const response = await fetch(`/api/operations/${id}`, {
         method: "DELETE",
-      })
+      });
       if (!response.ok) {
-        throw new Error("Failed to delete operation")
+        throw new Error("Failed to delete operation");
       }
-      await fetchOperations()
+      await fetchOperations();
       toast({
         title: "Sucesso",
         description: "Operação deletada com sucesso!",
-      })
+      });
     } catch (error) {
-      console.error("Error deleting operation:", error)
+      console.error("Error deleting operation:", error);
       toast({
         title: "Erro",
         description: "Não foi possível deletar a operação.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setDeleting(false)
+      setDeleting(false);
     }
-  }
+  };
 
   const handlePartnerChange = (index: number, field: string, value: string) => {
-    const updatedPartners = [...formData.partners]
-    updatedPartners[index] = { ...updatedPartners[index], [field]: value }
-    setFormData((prev) => ({ ...prev, partners: updatedPartners }))
-    validateCurrentStep()
-  }
+    const updatedPartners = [...formData.partners];
+    updatedPartners[index] = { ...updatedPartners[index], [field]: value };
+    setFormData((prev) => ({ ...prev, partners: updatedPartners }));
+    validateCurrentStep();
+  };
 
   const addPartner = () => {
     setFormData((prev) => ({
       ...prev,
-      partners: [...prev.partners, { name: "", cpf: "", cnpj: "", participation: "" }],
-    }))
-    validateCurrentStep()
-  }
+      partners: [
+        ...prev.partners,
+        { name: "", cpf: "", cnpj: "", participation: "" },
+      ],
+    }));
+    validateCurrentStep();
+  };
 
   const removePartner = (index: number) => {
     if (formData.partners.length > 1) {
-      const updatedPartners = [...formData.partners]
-      updatedPartners.splice(index, 1)
-      setFormData((prev) => ({ ...prev, partners: updatedPartners }))
-      validateCurrentStep()
+      const updatedPartners = [...formData.partners];
+      updatedPartners.splice(index, 1);
+      setFormData((prev) => ({ ...prev, partners: updatedPartners }));
+      validateCurrentStep();
     }
-  }
+  };
 
   const formatLabel = (key: string) => {
-    const labels = {
+    const labels: Record<string, string> = {
       clientName: "Nome do Cliente",
       clientEmail: "Email do Cliente",
       clientPhone: "Telefone do Cliente",
@@ -538,29 +560,29 @@ export default function MinhasOperacoesPage() {
       isRental: "Imóvel para Aluguel?",
       rentalValue: "Valor do Aluguel",
       propertyImage: "Imagem do Imóvel",
-    }
-    return labels[key] || key
-  }
+    };
+    return labels[key] || key;
+  };
 
   const formatValue = (key: string, value: any) => {
     if (key === "hasDebt") {
-      return value ? "Sim" : "Não"
+      return value ? "Sim" : "Não";
     }
     if (key === "isRental") {
-      return value ? "Sim" : "Não"
+      return value ? "Sim" : "Não";
     }
     if (key === "partners") {
-      return value.map((partner, index) => (
+      return value.map((partner: Partner, index: number) => (
         <div key={index}>
           <p>Nome: {partner.name}</p>
           <p>CPF: {partner.cpf}</p>
           <p>CNPJ: {partner.cnpj}</p>
           <p>Participação: {partner.participation}</p>
         </div>
-      ))
+      ));
     }
-    return value
-  }
+    return value;
+  };
 
   const renderFormStep = () => {
     switch (currentStep) {
@@ -572,7 +594,9 @@ export default function MinhasOperacoesPage() {
               <RadioGroup
                 id="personType"
                 value={formData.personType}
-                onValueChange={(value) => handleInputChange({ target: { name: "personType", value } })}
+                onValueChange={(value) =>
+                  handleInputChange({ target: { name: "personType", value } })
+                }
                 className="flex space-x-4 mt-2"
               >
                 <div className="flex items-center space-x-2">
@@ -632,7 +656,7 @@ export default function MinhasOperacoesPage() {
               </div>
             </div>
           </div>
-        )
+        );
       case 2:
         return (
           <div className="space-y-4 py-2">
@@ -641,12 +665,23 @@ export default function MinhasOperacoesPage() {
                 <div className="grid gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="cpf">CPF *</Label>
-                    <Input id="cpf" name="cpf" value={formData.cpf} onChange={handleInputChange} required />
+                    <Input
+                      id="cpf"
+                      name="cpf"
+                      value={formData.cpf}
+                      onChange={handleInputChange}
+                      required
+                    />
                   </div>
 
                   <div className="grid gap-2">
                     <Label htmlFor="rg">RG</Label>
-                    <Input id="rg" name="rg" value={formData.rg} onChange={handleInputChange} />
+                    <Input
+                      id="rg"
+                      name="rg"
+                      value={formData.rg}
+                      onChange={handleInputChange}
+                    />
                   </div>
 
                   <div className="grid gap-2">
@@ -661,7 +696,9 @@ export default function MinhasOperacoesPage() {
                   </div>
 
                   <div className="grid gap-2">
-                    <Label htmlFor="professionalActivity">Atividade Profissional</Label>
+                    <Label htmlFor="professionalActivity">
+                      Atividade Profissional
+                    </Label>
                     <Input
                       id="professionalActivity"
                       name="professionalActivity"
@@ -697,7 +734,9 @@ export default function MinhasOperacoesPage() {
                       <SelectContent>
                         <SelectItem value="solteiro">Solteiro(a)</SelectItem>
                         <SelectItem value="casado">Casado(a)</SelectItem>
-                        <SelectItem value="divorciado">Divorciado(a)</SelectItem>
+                        <SelectItem value="divorciado">
+                          Divorciado(a)
+                        </SelectItem>
                         <SelectItem value="viuvo">Viúvo(a)</SelectItem>
                       </SelectContent>
                     </Select>
@@ -727,7 +766,12 @@ export default function MinhasOperacoesPage() {
 
                       <div className="grid gap-2">
                         <Label htmlFor="spouseRG">RG do Cônjuge</Label>
-                        <Input id="spouseRG" name="spouseRG" value={formData.spouseRG} onChange={handleInputChange} />
+                        <Input
+                          id="spouseRG"
+                          name="spouseRG"
+                          value={formData.spouseRG}
+                          onChange={handleInputChange}
+                        />
                       </div>
                     </>
                   )}
@@ -738,11 +782,19 @@ export default function MinhasOperacoesPage() {
                 <div className="grid gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="cnpj">CNPJ *</Label>
-                    <Input id="cnpj" name="cnpj" value={formData.cnpj} onChange={handleInputChange} required />
+                    <Input
+                      id="cnpj"
+                      name="cnpj"
+                      value={formData.cnpj}
+                      onChange={handleInputChange}
+                      required
+                    />
                   </div>
 
                   <div className="grid gap-2">
-                    <Label htmlFor="companyRevenue">Faturamento da Empresa</Label>
+                    <Label htmlFor="companyRevenue">
+                      Faturamento da Empresa
+                    </Label>
                     <Input
                       id="companyRevenue"
                       name="companyRevenue"
@@ -753,7 +805,9 @@ export default function MinhasOperacoesPage() {
                   </div>
 
                   <div className="grid gap-2">
-                    <Label htmlFor="employeesCount">Número de Funcionários</Label>
+                    <Label htmlFor="employeesCount">
+                      Número de Funcionários
+                    </Label>
                     <Input
                       id="employeesCount"
                       name="employeesCount"
@@ -766,21 +820,33 @@ export default function MinhasOperacoesPage() {
                   <div className="mt-4">
                     <Label>Sócios</Label>
                     {formData.partners.map((partner, index) => (
-                      <div key={index} className="border p-3 rounded-md mt-2 space-y-3">
+                      <div
+                        key={index}
+                        className="border p-3 rounded-md mt-2 space-y-3"
+                      >
                         <div className="flex justify-between items-center">
                           <h4 className="font-medium">Sócio {index + 1}</h4>
                           {formData.partners.length > 1 && (
-                            <Button type="button" variant="destructive" size="sm" onClick={() => removePartner(index)}>
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => removePartner(index)}
+                            >
                               Remover
                             </Button>
                           )}
                         </div>
                         <div className="grid gap-2">
-                          <Label htmlFor={`partner-name-${index}`}>Nome *</Label>
+                          <Label htmlFor={`partner-name-${index}`}>
+                            Nome *
+                          </Label>
                           <Input
                             id={`partner-name-${index}`}
                             value={partner.name}
-                            onChange={(e) => handlePartnerChange(index, "name", e.target.value)}
+                            onChange={(e) =>
+                              handlePartnerChange(index, "name", e.target.value)
+                            }
                             required
                           />
                         </div>
@@ -789,7 +855,9 @@ export default function MinhasOperacoesPage() {
                           <Input
                             id={`partner-cpf-${index}`}
                             value={partner.cpf}
-                            onChange={(e) => handlePartnerChange(index, "cpf", e.target.value)}
+                            onChange={(e) =>
+                              handlePartnerChange(index, "cpf", e.target.value)
+                            }
                           />
                         </div>
                         <div className="grid gap-2">
@@ -797,21 +865,37 @@ export default function MinhasOperacoesPage() {
                           <Input
                             id={`partner-cnpj-${index}`}
                             value={partner.cnpj}
-                            onChange={(e) => handlePartnerChange(index, "cnpj", e.target.value)}
+                            onChange={(e) =>
+                              handlePartnerChange(index, "cnpj", e.target.value)
+                            }
                           />
                         </div>
                         <div className="grid gap-2">
-                          <Label htmlFor={`partner-participation-${index}`}>Participação (%) *</Label>
+                          <Label htmlFor={`partner-participation-${index}`}>
+                            Participação (%) *
+                          </Label>
                           <Input
                             id={`partner-participation-${index}`}
                             value={partner.participation}
-                            onChange={(e) => handlePartnerChange(index, "participation", e.target.value)}
+                            onChange={(e) =>
+                              handlePartnerChange(
+                                index,
+                                "participation",
+                                e.target.value
+                              )
+                            }
                             required
                           />
                         </div>
                       </div>
                     ))}
-                    <Button type="button" variant="outline" size="sm" className="mt-2" onClick={addPartner}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="mt-2"
+                      onClick={addPartner}
+                    >
                       Adicionar Sócio
                     </Button>
                   </div>
@@ -819,7 +903,7 @@ export default function MinhasOperacoesPage() {
               </>
             )}
           </div>
-        )
+        );
       case 3:
         return (
           <div className="space-y-4 py-2">
@@ -896,7 +980,9 @@ export default function MinhasOperacoesPage() {
                 <Checkbox
                   id="isRental"
                   checked={formData.isRental}
-                  onCheckedChange={(checked) => handleCheckboxChange("isRental", checked === true)}
+                  onCheckedChange={(checked) =>
+                    handleCheckboxChange("isRental", checked === true)
+                  }
                 />
                 <Label htmlFor="isRental">Imóvel para Aluguel?</Label>
               </div>
@@ -915,7 +1001,7 @@ export default function MinhasOperacoesPage() {
               )}
             </div>
           </div>
-        )
+        );
       case 4:
         return (
           <div className="space-y-4 py-2">
@@ -935,9 +1021,15 @@ export default function MinhasOperacoesPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="holerite">Holerite</SelectItem>
-                    <SelectItem value="declaracao_ir">Declaração de IR</SelectItem>
-                    <SelectItem value="extrato_bancario">Extrato Bancário</SelectItem>
-                    <SelectItem value="contrato_trabalho">Contrato de Trabalho</SelectItem>
+                    <SelectItem value="declaracao_ir">
+                      Declaração de IR
+                    </SelectItem>
+                    <SelectItem value="extrato_bancario">
+                      Extrato Bancário
+                    </SelectItem>
+                    <SelectItem value="contrato_trabalho">
+                      Contrato de Trabalho
+                    </SelectItem>
                     <SelectItem value="outro">Outro</SelectItem>
                   </SelectContent>
                 </Select>
@@ -957,17 +1049,22 @@ export default function MinhasOperacoesPage() {
 
               <div className="grid gap-2">
                 <Label htmlFor="documents">Documentos</Label>
-                <Input id="documents" name="documents" type="file" multiple onChange={handleFileChange} />
-                multiple onChange={handleFileChange}
+                <Input
+                  id="documents"
+                  name="documents"
+                  type="file"
+                  multiple
+                  onChange={handleFileChange}
                 />
-                <p className="text-sm text-muted-foreground">Você pode selecionar múltiplos arquivos</p>
               </div>
 
               <div className="flex items-center space-x-2 mt-2">
                 <Checkbox
                   id="hasDebt"
                   checked={formData.hasDebt}
-                  onCheckedChange={(checked) => handleCheckboxChange("hasDebt", checked === true)}
+                  onCheckedChange={(checked) =>
+                    handleCheckboxChange("hasDebt", checked === true)
+                  }
                 />
                 <Label htmlFor="hasDebt">Possui Dívidas?</Label>
               </div>
@@ -986,7 +1083,9 @@ export default function MinhasOperacoesPage() {
                   </div>
 
                   <div className="grid gap-2">
-                    <Label htmlFor="debtInstitution">Instituição da Dívida</Label>
+                    <Label htmlFor="debtInstitution">
+                      Instituição da Dívida
+                    </Label>
                     <Input
                       id="debtInstitution"
                       name="debtInstitution"
@@ -1002,8 +1101,6 @@ export default function MinhasOperacoesPage() {
                 <Textarea
                   id="legalProcesses"
                   name="legalProcesses"
-                  value={formData.legalProcesses}
-                  onChange={handleInputChange}
                   value={formData.legalProcesses}
                   onChange={handleInputChange}
                   placeholder="Descreva processos legais em andamento, se houver"
@@ -1024,11 +1121,11 @@ export default function MinhasOperacoesPage() {
               </div>
             </div>
           </div>
-        )
+        );
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -1037,7 +1134,11 @@ export default function MinhasOperacoesPage() {
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Button variant="outline" onClick={() => router.push("/dashboard")} className="mr-2">
+              <Button
+                variant="outline"
+                onClick={() => router.push("/dashboard")}
+                className="mr-2"
+              >
                 Voltar para Dashboard
               </Button>
               <h1 className="text-xl font-semibold">Minhas Operações</h1>
@@ -1057,12 +1158,22 @@ export default function MinhasOperacoesPage() {
                   <SelectItem value="all">Todos os status</SelectItem>
                   <SelectItem value="Pré-Análise">Pré-Análise</SelectItem>
                   <SelectItem value="Análise">Análise</SelectItem>
-                  <SelectItem value="Análise de Crédito">Análise de Crédito</SelectItem>
-                  <SelectItem value="Análise Jurídica e Laudo de Engenharia">Análise Jurídica e Laudo</SelectItem>
+                  <SelectItem value="Análise de Crédito">
+                    Análise de Crédito
+                  </SelectItem>
+                  <SelectItem value="Análise Jurídica e Laudo de Engenharia">
+                    Análise Jurídica e Laudo
+                  </SelectItem>
                   <SelectItem value="Comitê">Comitê</SelectItem>
-                  <SelectItem value="Crédito Aprovado">Crédito Aprovado</SelectItem>
-                  <SelectItem value="Contrato Assinado">Contrato Assinado</SelectItem>
-                  <SelectItem value="Contrato Registrado">Contrato Registrado</SelectItem>
+                  <SelectItem value="Crédito Aprovado">
+                    Crédito Aprovado
+                  </SelectItem>
+                  <SelectItem value="Contrato Assinado">
+                    Contrato Assinado
+                  </SelectItem>
+                  <SelectItem value="Contrato Registrado">
+                    Contrato Registrado
+                  </SelectItem>
                   <SelectItem value="Recusada">Recusada</SelectItem>
                   <SelectItem value="Em andamento">Em andamento</SelectItem>
                   <SelectItem value="Concluída">Concluída</SelectItem>
@@ -1078,17 +1189,30 @@ export default function MinhasOperacoesPage() {
               {session && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Button
+                      variant="ghost"
+                      className="relative h-8 w-8 rounded-full"
+                    >
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={session.user.image!} alt={session.user.name!} />
-                        <AvatarFallback>{session.user.name?.charAt(0).toUpperCase()}</AvatarFallback>
+                        <AvatarImage
+                          src={session.user.image!}
+                          alt={session.user.name!}
+                        />
+                        <AvatarFallback>
+                          {session.user.name?.charAt(0).toUpperCase()}
+                        </AvatarFallback>
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => signOut()}>Sair</DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => signOut()}
+                      className="cursor-pointer"
+                    >
+                      Sair
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
@@ -1100,7 +1224,7 @@ export default function MinhasOperacoesPage() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          {/* Search and filter section removed from here */}
+          {/* Seção de busca e filtros */}
         </div>
 
         {loading ? (
@@ -1112,17 +1236,23 @@ export default function MinhasOperacoesPage() {
             <Table>
               <TableHeader className="bg-muted/50">
                 <TableRow>
-                  <TableCell className="w-[150px] font-medium">Número da Operação</TableCell>
+                  <TableCell className="w-[150px] font-medium">
+                    Número da Operação
+                  </TableCell>
                   <TableCell className="font-medium">Cliente</TableCell>
                   <TableCell className="w-[150px] font-medium">Valor</TableCell>
-                  <TableCell className="w-[200px] font-medium">Status</TableCell>
+                  <TableCell className="w-[200px] font-medium">
+                    Status
+                  </TableCell>
                   <TableCell className="w-[150px] font-medium">Ações</TableCell>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {operations.map((operation) => (
                   <TableRow key={operation._id}>
-                    <TableCell className="font-medium">{operation.number}</TableCell>
+                    <TableCell className="font-medium">
+                      {operation.number}
+                    </TableCell>
                     <TableCell>{operation.clientName}</TableCell>
                     <TableCell>
                       R${" "}
@@ -1134,7 +1264,8 @@ export default function MinhasOperacoesPage() {
                       <span
                         className={cn(
                           "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium",
-                          statusColors[operation.status] || "bg-gray-100 text-gray-800",
+                          statusColors[operation.status] ||
+                            "bg-gray-100 text-gray-800"
                         )}
                       >
                         {operation.status}
@@ -1142,7 +1273,11 @@ export default function MinhasOperacoesPage() {
                     </TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
-                        <Button variant="outline" size="sm" onClick={() => handleViewDetails(operation)}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleViewDetails(operation)}
+                        >
                           Ver detalhes
                         </Button>
                         <Button
@@ -1174,7 +1309,9 @@ export default function MinhasOperacoesPage() {
           <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
               <DialogTitle>Nova Operação - Passo {currentStep}/4</DialogTitle>
-              <DialogDescription>Preencha os detalhes abaixo. Campos com * são obrigatórios.</DialogDescription>
+              <DialogDescription>
+                Preencha os detalhes abaixo. Campos com * são obrigatórios.
+              </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit}>
               {renderFormStep()}
@@ -1185,11 +1322,21 @@ export default function MinhasOperacoesPage() {
                   </Button>
                 )}
                 {currentStep < 4 ? (
-                  <Button type="button" onClick={handleNextStep} className="ml-auto rounded-md" size="sm">
+                  <Button
+                    type="button"
+                    onClick={handleNextStep}
+                    className="ml-auto rounded-md"
+                    size="sm"
+                  >
                     Próximo
                   </Button>
                 ) : (
-                  <Button type="submit" className="ml-auto rounded-md" size="sm" disabled={submitting}>
+                  <Button
+                    type="submit"
+                    className="ml-auto rounded-md"
+                    size="sm"
+                    disabled={submitting}
+                  >
                     {submitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -1204,11 +1351,18 @@ export default function MinhasOperacoesPage() {
             </form>
           </DialogContent>
         </Dialog>
-        <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
+        <Dialog
+          open={isDetailsDialogOpen}
+          onOpenChange={setIsDetailsDialogOpen}
+        >
           <DialogContent className="sm:max-w-[450px] max-h-[80vh] overflow-y-auto rounded-lg">
             <DialogHeader>
-              <DialogTitle>Detalhes da Operação {selectedOperation?.number}</DialogTitle>
-              <DialogDescription>Informações detalhadas sobre a operação selecionada.</DialogDescription>
+              <DialogTitle>
+                Detalhes da Operação {selectedOperation?.number}
+              </DialogTitle>
+              <DialogDescription>
+                Informações detalhadas sobre a operação selecionada.
+              </DialogDescription>
             </DialogHeader>
             {selectedOperation && (
               <div>
@@ -1220,13 +1374,15 @@ export default function MinhasOperacoesPage() {
                 ))}
               </div>
             )}
-            <Button onClick={() => setIsDetailsDialogOpen(false)} className="mt-4">
+            <Button
+              onClick={() => setIsDetailsDialogOpen(false)}
+              className="mt-4"
+            >
               Fechar
             </Button>
           </DialogContent>
         </Dialog>
       </main>
     </div>
-  )
+  );
 }
-

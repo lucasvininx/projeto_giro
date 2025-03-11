@@ -1,12 +1,21 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { Bell, Sun, Moon, LogOut, User, Settings, PlusCircle, ArrowLeft } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useState, useEffect } from "react";
+import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import {
+  Bell,
+  Sun,
+  Moon,
+  LogOut,
+  User,
+  Settings,
+  PlusCircle,
+  ArrowLeft,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,10 +23,25 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { useTheme } from "next-themes"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
+} from "@/components/ui/dropdown-menu";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { useTheme } from "next-themes";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 import {
   Dialog,
   DialogContent,
@@ -25,32 +49,32 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 
 type Operation = {
-  id: string
-  client: string
-  amount: number
-  date: string
-  status: "completed" | "pending" | "processing"
-  clientEmail: string
-  employeeName: string
-}
+  id: string;
+  client: string;
+  amount: number;
+  date: string;
+  status: "completed" | "pending" | "processing";
+  clientEmail: string;
+  employeeName: string;
+};
 
 type Employee = {
-  name: string
-  image: string
-  operacoes: number
-  receita: number
-  parceiros: number
+  name: string;
+  image: string;
+  operacoes: number;
+  receita: number;
+  parceiros: number;
   metas: Array<{
-    name: string
-    value: number
-    target: number
-  }>
-}
+    name: string;
+    value: number;
+    target: number;
+  }>;
+};
 
-const notifications = [] // Placeholder for notifications
+const notifications = []; // Placeholder for notifications
 
 const employeePerformanceData: Employee[] = [
   {
@@ -113,7 +137,7 @@ const employeePerformanceData: Employee[] = [
       { name: "Parceiros", value: 25, target: 30 },
     ],
   },
-]
+];
 
 const allOperations: Operation[] = [
   {
@@ -161,50 +185,75 @@ const allOperations: Operation[] = [
     clientEmail: "carlos.ferreira@email.com",
     employeeName: "Larissa",
   },
-]
+];
 
 const getBestPerformer = (data, key) => {
-  return data.reduce((best, current) => (current[key] > best[key] ? current : best))
-}
+  return data.reduce((best, current) =>
+    current[key] > best[key] ? current : best
+  );
+};
 
 const getBestPerformers = (data) => {
   return {
     bestRevenue: getBestPerformer(data, "receita"),
     bestOperations: getBestPerformer(data, "operacoes"),
     bestPartners: getBestPerformer(data, "parceiros"),
-  }
-}
+  };
+};
 
 const COLORS = {
   primary: "#FFA500",
   secondary: "#FF8C00",
   accent: "#FFD700",
   bars: "#FFFFFF",
-}
+};
 
 export default function DesempenhoPage() {
-  const { data: session, status } = useSession()
-  const { theme, setTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
-  const router = useRouter()
-  const [newGoal, setNewGoal] = useState({ name: "", target: "" })
-  const [selectedEmployee, setSelectedEmployee] = useState("all")
-  const [currentEmployeeData, setCurrentEmployeeData] = useState(employeePerformanceData[0])
-  const [recentOperations, setRecentOperations] = useState<Operation[]>(allOperations)
+  const { data: session, status } = useSession();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const router = useRouter();
+  const [newGoal, setNewGoal] = useState({ name: "", target: "" });
+  const [selectedEmployee, setSelectedEmployee] = useState("all");
+  const [currentEmployeeData, setCurrentEmployeeData] = useState(
+    employeePerformanceData[0]
+  );
+  const [recentOperations, setRecentOperations] =
+    useState<Operation[]>(allOperations);
+
+  // Protege a rota: se o usuário não estiver autenticado, redireciona para /login
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.replace("/login");
+    }
+  }, [status, router]);
+
+  if (status !== "authenticated") {
+    return null;
+  }
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (selectedEmployee === "all") {
-      const bestPerformers = getBestPerformers(employeePerformanceData)
+      const bestPerformers = getBestPerformers(employeePerformanceData);
       setCurrentEmployeeData({
         name: "Todos os Funcionários",
         image: "/avatars/all.png",
-        receita: employeePerformanceData.reduce((sum, emp) => sum + emp.receita, 0),
-        operacoes: employeePerformanceData.reduce((sum, emp) => sum + emp.operacoes, 0),
-        parceiros: employeePerformanceData.reduce((sum, emp) => sum + emp.parceiros, 0),
+        receita: employeePerformanceData.reduce(
+          (sum, emp) => sum + emp.receita,
+          0
+        ),
+        operacoes: employeePerformanceData.reduce(
+          (sum, emp) => sum + emp.operacoes,
+          0
+        ),
+        parceiros: employeePerformanceData.reduce(
+          (sum, emp) => sum + emp.parceiros,
+          0
+        ),
         metas: [
           {
             name: "Melhor Faturamento",
@@ -225,27 +274,32 @@ export default function DesempenhoPage() {
             performer: bestPerformers.bestPartners.name,
           },
         ],
-      })
-      setRecentOperations(allOperations)
+      });
+      setRecentOperations(allOperations);
     } else {
-      const employee = employeePerformanceData.find((emp) => emp.name === selectedEmployee)
+      const employee = employeePerformanceData.find(
+        (emp) => emp.name === selectedEmployee
+      );
       if (employee) {
-        setCurrentEmployeeData(employee)
-        setRecentOperations(allOperations.filter((op) => op.employeeName === employee.name))
+        setCurrentEmployeeData(employee);
+        setRecentOperations(
+          allOperations.filter((op) => op.employeeName === employee.name)
+        );
       }
     }
-  }, [selectedEmployee])
+  }, [selectedEmployee]);
 
-  const handleLogout = () => {
-    router.push("/login")
-  }
+  const handleLogout = async () => {
+    // Encerra a sessão e redireciona para a página de login
+    await signOut({ callbackUrl: "/login" });
+  };
 
   const handleAddGoal = () => {
-    console.log("New goal:", newGoal)
-    setNewGoal({ name: "", target: "" })
-  }
+    console.log("New goal:", newGoal);
+    setNewGoal({ name: "", target: "" });
+  };
 
-  if (!mounted) return null
+  if (!mounted) return null;
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
@@ -258,10 +312,10 @@ export default function DesempenhoPage() {
             </p>
           ))}
         </div>
-      )
+      );
     }
-    return null
-  }
+    return null;
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -270,14 +324,26 @@ export default function DesempenhoPage() {
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon" onClick={() => router.push("/dashboard")}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => router.push("/dashboard")}
+            >
               <ArrowLeft className="h-6 w-6" />
             </Button>
             <h1 className="text-3xl font-bold">Desempenho</h1>
           </div>
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
-              {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            >
+              {theme === "dark" ? (
+                <Sun className="h-5 w-5" />
+              ) : (
+                <Moon className="h-5 w-5" />
+              )}
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -296,7 +362,9 @@ export default function DesempenhoPage() {
                     </DropdownMenuItem>
                   ))
                 ) : (
-                  <div className="p-4 text-sm text-muted-foreground">Não há novas atualizações</div>
+                  <div className="p-4 text-sm text-muted-foreground">
+                    Não há novas atualizações
+                  </div>
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
@@ -304,8 +372,12 @@ export default function DesempenhoPage() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Avatar className="cursor-pointer">
-                  <AvatarImage src={session?.user?.image || "/img/default-avatar.png"} />
-                  <AvatarFallback>{session?.user?.name ? session.user.name.charAt(0) : "U"}</AvatarFallback>
+                  <AvatarImage
+                    src={session?.user?.image || "/img/default-avatar.png"}
+                  />
+                  <AvatarFallback>
+                    {session?.user?.name ? session.user.name.charAt(0) : "U"}
+                  </AvatarFallback>
                 </Avatar>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -335,7 +407,9 @@ export default function DesempenhoPage() {
             {/* Employee Selection */}
             <Card className="bg-card/10 backdrop-blur-sm border-0">
               <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Selecione um Funcionário</CardTitle>
+                <CardTitle className="text-lg">
+                  Selecione um Funcionário
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-3">
@@ -343,7 +417,9 @@ export default function DesempenhoPage() {
                     key="all"
                     onClick={() => setSelectedEmployee("all")}
                     className={`flex flex-col items-center p-3 rounded-lg transition-colors ${
-                      selectedEmployee === "all" ? "bg-primary text-primary-foreground" : "hover:bg-accent"
+                      selectedEmployee === "all"
+                        ? "bg-primary text-primary-foreground"
+                        : "hover:bg-accent"
                     }`}
                   >
                     <Avatar className="h-12 w-12 mb-2">
@@ -352,7 +428,11 @@ export default function DesempenhoPage() {
                     </Avatar>
                     <p className="font-medium text-sm text-center">Todos</p>
                     <p className="text-xs text-muted-foreground">
-                      {employeePerformanceData.reduce((sum, emp) => sum + emp.operacoes, 0)} op.
+                      {employeePerformanceData.reduce(
+                        (sum, emp) => sum + emp.operacoes,
+                        0
+                      )}{" "}
+                      op.
                     </p>
                   </button>
                   {employeePerformanceData.map((employee) => (
@@ -360,15 +440,21 @@ export default function DesempenhoPage() {
                       key={employee.name}
                       onClick={() => setSelectedEmployee(employee.name)}
                       className={`flex flex-col items-center p-3 rounded-lg transition-colors ${
-                        selectedEmployee === employee.name ? "bg-primary text-primary-foreground" : "hover:bg-accent"
+                        selectedEmployee === employee.name
+                          ? "bg-primary text-primary-foreground"
+                          : "hover:bg-accent"
                       }`}
                     >
                       <Avatar className="h-12 w-12 mb-2">
                         <AvatarImage src={employee.image} alt={employee.name} />
                         <AvatarFallback>{employee.name[0]}</AvatarFallback>
                       </Avatar>
-                      <p className="font-medium text-sm text-center">{employee.name}</p>
-                      <p className="text-xs text-muted-foreground">{employee.operacoes} op.</p>
+                      <p className="font-medium text-sm text-center">
+                        {employee.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {employee.operacoes} op.
+                      </p>
                     </button>
                   ))}
                 </div>
@@ -379,23 +465,35 @@ export default function DesempenhoPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Card className="bg-card/10 backdrop-blur-sm border-0">
                 <CardHeader>
-                  <CardTitle className="text-sm font-medium">Faturamento</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Faturamento
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-bold">R$ {currentEmployeeData.receita.toLocaleString()}</p>
+                  <p className="text-2xl font-bold">
+                    R$ {currentEmployeeData.receita.toLocaleString()}
+                  </p>
                   <p className="text-sm text-muted-foreground mt-2">
                     {selectedEmployee === "all"
                       ? `${currentEmployeeData.metas[0].performer} tem o melhor faturamento`
-                      : `${currentEmployeeData.name} atingiu um faturamento de ${currentEmployeeData.receita / 1000} mil`}
+                      : `${
+                          currentEmployeeData.name
+                        } atingiu um faturamento de ${
+                          currentEmployeeData.receita / 1000
+                        } mil`}
                   </p>
                 </CardContent>
               </Card>
               <Card className="bg-card/10 backdrop-blur-sm border-0">
                 <CardHeader>
-                  <CardTitle className="text-sm font-medium">Operações</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Operações
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-bold">{currentEmployeeData.operacoes}</p>
+                  <p className="text-2xl font-bold">
+                    {currentEmployeeData.operacoes}
+                  </p>
                   <p className="text-sm text-muted-foreground mt-2">
                     {selectedEmployee === "all"
                       ? `${currentEmployeeData.metas[1].performer} cadastrou mais operações`
@@ -405,10 +503,14 @@ export default function DesempenhoPage() {
               </Card>
               <Card className="bg-card/10 backdrop-blur-sm border-0">
                 <CardHeader>
-                  <CardTitle className="text-sm font-medium">Parceiros</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Parceiros
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-bold">{currentEmployeeData.parceiros}</p>
+                  <p className="text-2xl font-bold">
+                    {currentEmployeeData.parceiros}
+                  </p>
                   <p className="text-sm text-muted-foreground mt-2">
                     {selectedEmployee === "all"
                       ? `${currentEmployeeData.metas[2].performer} tem mais parceiros ativos`
@@ -427,7 +529,11 @@ export default function DesempenhoPage() {
                 <div className="h-[350px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
-                      data={selectedEmployee === "all" ? employeePerformanceData : [currentEmployeeData]}
+                      data={
+                        selectedEmployee === "all"
+                          ? employeePerformanceData
+                          : [currentEmployeeData]
+                      }
                       margin={{
                         top: 20,
                         right: 30,
@@ -435,9 +541,22 @@ export default function DesempenhoPage() {
                         bottom: 20,
                       }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" className="opacity-10" />
-                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "currentColor" }} />
-                      <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fill: "currentColor" }} />
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        className="opacity-10"
+                      />
+                      <XAxis
+                        dataKey="name"
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: "currentColor" }}
+                      />
+                      <YAxis
+                        yAxisId="left"
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: "currentColor" }}
+                      />
                       <YAxis
                         yAxisId="right"
                         orientation="right"
@@ -448,9 +567,7 @@ export default function DesempenhoPage() {
                       <Tooltip content={<CustomTooltip />} />
                       <Legend
                         iconType="circle"
-                        wrapperStyle={{
-                          paddingTop: "20px",
-                        }}
+                        wrapperStyle={{ paddingTop: "20px" }}
                       />
                       <Bar
                         yAxisId="left"
@@ -486,7 +603,9 @@ export default function DesempenhoPage() {
               <CardHeader>
                 <CardTitle className="flex justify-between items-center">
                   <span>
-                    {selectedEmployee === "all" ? "Melhores Desempenhos" : `Metas de ${currentEmployeeData.name}`}
+                    {selectedEmployee === "all"
+                      ? "Melhores Desempenhos"
+                      : `Metas de ${currentEmployeeData.name}`}
                   </span>
                   {selectedEmployee !== "all" && (
                     <Dialog>
@@ -499,7 +618,10 @@ export default function DesempenhoPage() {
                       <DialogContent>
                         <DialogHeader>
                           <DialogTitle>Adicionar Nova Meta</DialogTitle>
-                          <DialogDescription>Defina uma nova meta para {currentEmployeeData.name}.</DialogDescription>
+                          <DialogDescription>
+                            Defina uma nova meta para {currentEmployeeData.name}
+                            .
+                          </DialogDescription>
                         </DialogHeader>
                         <div className="grid gap-4 py-4">
                           <div className="grid grid-cols-4 items-center gap-4">
@@ -509,7 +631,9 @@ export default function DesempenhoPage() {
                             <Input
                               id="name"
                               value={newGoal.name}
-                              onChange={(e) => setNewGoal({ ...newGoal, name: e.target.value })}
+                              onChange={(e) =>
+                                setNewGoal({ ...newGoal, name: e.target.value })
+                              }
                               className="col-span-3"
                             />
                           </div>
@@ -520,7 +644,12 @@ export default function DesempenhoPage() {
                             <Input
                               id="target"
                               value={newGoal.target}
-                              onChange={(e) => setNewGoal({ ...newGoal, target: e.target.value })}
+                              onChange={(e) =>
+                                setNewGoal({
+                                  ...newGoal,
+                                  target: e.target.value,
+                                })
+                              }
                               className="col-span-3"
                             />
                           </div>
@@ -544,9 +673,22 @@ export default function DesempenhoPage() {
                           bottom: 20,
                         }}
                       >
-                        <CartesianGrid strokeDasharray="3 3" className="opacity-10" />
-                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "currentColor" }} />
-                        <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fill: "currentColor" }} />
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          className="opacity-10"
+                        />
+                        <XAxis
+                          dataKey="name"
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fill: "currentColor" }}
+                        />
+                        <YAxis
+                          yAxisId="left"
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fill: "currentColor" }}
+                        />
                         <YAxis
                           yAxisId="right"
                           orientation="right"
@@ -557,9 +699,7 @@ export default function DesempenhoPage() {
                         <Tooltip content={<CustomTooltip />} />
                         <Legend
                           iconType="circle"
-                          wrapperStyle={{
-                            paddingTop: "20px",
-                          }}
+                          wrapperStyle={{ paddingTop: "20px" }}
                         />
                         <Bar
                           yAxisId="left"
@@ -595,18 +735,39 @@ export default function DesempenhoPage() {
                           bottom: 20,
                         }}
                       >
-                        <CartesianGrid strokeDasharray="3 3" className="opacity-10" />
-                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "currentColor" }} />
-                        <YAxis axisLine={false} tickLine={false} tick={{ fill: "currentColor" }} />
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          className="opacity-10"
+                        />
+                        <XAxis
+                          dataKey="name"
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fill: "currentColor" }}
+                        />
+                        <YAxis
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fill: "currentColor" }}
+                        />
                         <Tooltip content={<CustomTooltip />} />
                         <Legend
                           iconType="circle"
-                          wrapperStyle={{
-                            paddingTop: "20px",
-                          }}
+                          wrapperStyle={{ paddingTop: "20px" }}
                         />
-                        <Bar dataKey="value" fill={COLORS.bars} name="Atual" radius={[4, 4, 0, 0]} />
-                        <Bar dataKey="target" fill={COLORS.bars} name="Meta" radius={[4, 4, 0, 0]} opacity={0.6} />
+                        <Bar
+                          dataKey="value"
+                          fill={COLORS.bars}
+                          name="Atual"
+                          radius={[4, 4, 0, 0]}
+                        />
+                        <Bar
+                          dataKey="target"
+                          fill={COLORS.bars}
+                          name="Meta"
+                          radius={[4, 4, 0, 0]}
+                          opacity={0.6}
+                        />
                       </BarChart>
                     )}
                   </ResponsiveContainer>
@@ -635,30 +796,38 @@ export default function DesempenhoPage() {
                     >
                       <div className="flex items-center space-x-3">
                         <Avatar className="h-10 w-10">
-                          <AvatarImage src={`https://avatar.vercel.sh/${operation.client}.png`} />
+                          <AvatarImage
+                            src={`https://avatar.vercel.sh/${operation.client}.png`}
+                          />
                           <AvatarFallback>{operation.client[0]}</AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="text-sm font-medium leading-none">{operation.client}</p>
-                          <p className="text-xs text-muted-foreground">{operation.clientEmail}</p>
+                          <p className="text-sm font-medium leading-none">
+                            {operation.client}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {operation.clientEmail}
+                          </p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-medium">R$ {operation.amount.toLocaleString()}</p>
+                        <p className="text-sm font-medium">
+                          R$ {operation.amount.toLocaleString()}
+                        </p>
                         <p
                           className={`text-xs ${
                             operation.status === "completed"
                               ? "text-green-500"
                               : operation.status === "processing"
-                                ? "text-orange-500"
-                                : "text-red-500"
+                              ? "text-orange-500"
+                              : "text-red-500"
                           }`}
                         >
                           {operation.status === "completed"
                             ? "Concluída"
                             : operation.status === "processing"
-                              ? "Em Processo"
-                              : "Pendente"}
+                            ? "Em Processo"
+                            : "Pendente"}
                         </p>
                       </div>
                     </div>
@@ -675,30 +844,47 @@ export default function DesempenhoPage() {
               <CardContent>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Total de Operações</p>
-                    <p className="text-2xl font-bold">{recentOperations.length}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Total de Operações
+                    </p>
+                    <p className="text-2xl font-bold">
+                      {recentOperations.length}
+                    </p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-sm text-muted-foreground">Valor Total</p>
                     <p className="text-2xl font-bold">
-                      R$ {recentOperations.reduce((sum, op) => sum + op.amount, 0).toLocaleString()}
+                      R${" "}
+                      {recentOperations
+                        .reduce((sum, op) => sum + op.amount, 0)
+                        .toLocaleString()}
                     </p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Média por Operação</p>
+                    <p className="text-sm text-muted-foreground">
+                      Média por Operação
+                    </p>
                     <p className="text-2xl font-bold">
                       R${" "}
                       {Math.round(
-                        recentOperations.reduce((sum, op) => sum + op.amount, 0) / recentOperations.length,
+                        recentOperations.reduce(
+                          (sum, op) => sum + op.amount,
+                          0
+                        ) / recentOperations.length
                       ).toLocaleString()}
                     </p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Taxa de Conclusão</p>
+                    <p className="text-sm text-muted-foreground">
+                      Taxa de Conclusão
+                    </p>
                     <p className="text-2xl font-bold">
                       {Math.round(
-                        (recentOperations.filter((op) => op.status === "completed").length / recentOperations.length) *
-                          100,
+                        (recentOperations.filter(
+                          (op) => op.status === "completed"
+                        ).length /
+                          recentOperations.length) *
+                          100
                       )}
                       %
                     </p>
@@ -710,6 +896,5 @@ export default function DesempenhoPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
-
